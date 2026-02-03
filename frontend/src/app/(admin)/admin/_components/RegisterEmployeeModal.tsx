@@ -39,6 +39,22 @@ export default function RegisterEmployeeModal({
       // Dummy Login Bypass: Simulate success if using dummy token
       if (token === "dummy-admin-token") {
         console.log("Admin Bypass: Simulating employee registration success");
+
+        // Save to localStorage for persistence in dummy mode
+        const savedEmployees = localStorage.getItem("dummy_employees");
+        let mockEmployees = savedEmployees ? JSON.parse(savedEmployees) : [];
+
+        const newEmployee = {
+          _id: Math.random().toString(36).substr(2, 9),
+          name: formData.name,
+          email: formData.email,
+          role: "Employee", // Default role
+          createdAt: new Date().toISOString()
+        };
+
+        mockEmployees.push(newEmployee);
+        localStorage.setItem("dummy_employees", JSON.stringify(mockEmployees));
+
         // Simulate network delay
         await new Promise((resolve) => setTimeout(resolve, 1500));
 

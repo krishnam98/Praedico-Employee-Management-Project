@@ -42,36 +42,47 @@ export default function EmployeesPage() {
       // Dummy Login Bypass: Show mock data if using dummy token
       if (token === "dummy-admin-token") {
         console.log("Admin Bypass: Using mock employee data");
-        const mockEmployees: Employee[] = [
-          {
-            _id: "1",
-            name: "Arjun Singh",
-            email: "arjun@praedico.com",
-            role: "Manager",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "2",
-            name: "Priya Sharma",
-            email: "priya@praedico.com",
-            role: "Developer",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "3",
-            name: "Rahul Verma",
-            email: "rahul@praedico.com",
-            role: "Designer",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "4",
-            name: "Anjali Gupta",
-            email: "anjali@praedico.com",
-            role: "HR",
-            createdAt: new Date().toISOString(),
-          }
-        ];
+
+        // Try to get from localStorage first
+        const savedEmployees = localStorage.getItem("dummy_employees");
+        let mockEmployees: Employee[] = [];
+
+        if (savedEmployees) {
+          mockEmployees = JSON.parse(savedEmployees);
+        } else {
+          // Default mock data if nothing in localStorage
+          mockEmployees = [
+            {
+              _id: "1",
+              name: "Arjun Singh",
+              email: "arjun@praedico.com",
+              role: "Manager",
+              createdAt: new Date().toISOString(),
+            },
+            {
+              _id: "2",
+              name: "Priya Sharma",
+              email: "priya@praedico.com",
+              role: "Developer",
+              createdAt: new Date().toISOString(),
+            },
+            {
+              _id: "3",
+              name: "Rahul Verma",
+              email: "rahul@praedico.com",
+              role: "Designer",
+              createdAt: new Date().toISOString(),
+            },
+            {
+              _id: "4",
+              name: "Anjali Gupta",
+              email: "anjali@praedico.com",
+              role: "HR",
+              createdAt: new Date().toISOString(),
+            }
+          ];
+          localStorage.setItem("dummy_employees", JSON.stringify(mockEmployees));
+        }
 
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 800));
