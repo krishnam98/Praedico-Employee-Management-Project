@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Filter, 
-  Download, 
-  Mail, 
-  Calendar, 
-  MoreVertical, 
-  Loader2, 
+import {
+  Users,
+  UserPlus,
+  Search,
+  Filter,
+  Download,
+  Mail,
+  Calendar,
+  MoreVertical,
+  Loader2,
   AlertCircle,
   ChevronLeft,
   ChevronRight,
@@ -38,6 +38,48 @@ export default function EmployeesPage() {
     setError("");
     try {
       const token = localStorage.getItem("admin_token");
+
+      // Dummy Login Bypass: Show mock data if using dummy token
+      if (token === "dummy-admin-token") {
+        console.log("Admin Bypass: Using mock employee data");
+        const mockEmployees: Employee[] = [
+          {
+            _id: "1",
+            name: "Arjun Singh",
+            email: "arjun@praedico.com",
+            role: "Manager",
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: "2",
+            name: "Priya Sharma",
+            email: "priya@praedico.com",
+            role: "Developer",
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: "3",
+            name: "Rahul Verma",
+            email: "rahul@praedico.com",
+            role: "Designer",
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: "4",
+            name: "Anjali Gupta",
+            email: "anjali@praedico.com",
+            role: "HR",
+            createdAt: new Date().toISOString(),
+          }
+        ];
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setEmployees(mockEmployees);
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.get("http://localhost:5000/api/admin/employees", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -148,7 +190,7 @@ export default function EmployeesPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Error Fetching Data</h3>
             <p className="text-slate-400 max-w-sm">{error}</p>
-            <button 
+            <button
               onClick={fetchEmployees}
               className="mt-6 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
             >
