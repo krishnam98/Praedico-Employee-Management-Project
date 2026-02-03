@@ -31,8 +31,16 @@ export default function DashboardNavbar() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5001/api/users/me", {
-          withCredentials: true
+        const token = localStorage.getItem("admin_token");
+        if (!token) {
+           setAdminEmail("Guest Mode");
+           return;
+        }
+
+        const { data } = await axios.get("http://localhost:5000/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         if (data.success && data.user) {
@@ -53,8 +61,9 @@ export default function DashboardNavbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5001/api/users/logout", {}, { withCredentials: true });
-      router.push("/");
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_user");
+      router.push("/admin/auth/signin");
     } catch(e) { console.error(e); }
   };
 

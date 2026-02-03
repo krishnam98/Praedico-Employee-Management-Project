@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Users, Activity, Clock, MoreVertical, DollarSign, ArrowUpRight, ArrowDownRight, Mail, MousePointer2, Eye, Calendar, MessageSquare, Paperclip, Search, Star, Filter, ChevronRight, PanelLeftClose, PanelLeft, LayoutDashboard, BarChart2, ShoppingCart, FileText, Inbox, Layers, Archive } from "lucide-react";
 import axios from 'axios';
 // import UserManagementModal from "../_components/UserManagementModal";
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   
   // 2. DYNAMIC NAME STATE
   const [adminName, setAdminName] = useState("Admin");
+  const router = useRouter();
 // const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
 
 
@@ -24,8 +26,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5001/api/users/me", {
-          withCredentials: true
+        const token = localStorage.getItem("admin_token");
+        if (!token) {
+          router.push("/admin/auth/signIn");
+          return;
+        }
+
+        const { data } = await axios.get("http://localhost:5000/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         if (data.success && data.user) {
@@ -33,7 +43,7 @@ export default function AdminDashboard() {
         }
       } catch (e) {
         console.error("Failed to fetch admin profile", e);
-        // Optional: Redirect to login if needed, or rely on Middleware
+        router.push("/admin/auth/signIn");
       }
     };
 
