@@ -7,6 +7,7 @@ import adminRoutes from "./Routes/AdminRoutes.js";
 
 dotenv.config();
 connectDB();
+
 const app = express();
 
 app.use(express.json());

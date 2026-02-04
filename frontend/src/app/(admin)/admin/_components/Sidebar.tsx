@@ -21,6 +21,7 @@ import {
   FileText,
   HelpCircle,
   User,
+  UserCheck,
   CreditCard,
 } from "lucide-react";
 import axios from "axios";
@@ -82,6 +83,7 @@ const MENU_GROUPS: MenuGroup[] = [
     title: "Workspace",
     items: [
       { href: "/admin/employees", label: "Employees", icon: Users },
+      { label: "User Management", icon: UserCheck },
       { href: "/admin/reports", label: "System Reports", icon: FileText },
       { href: "/admin/inbox", label: "Inbox", icon: Mail, badge: 3, variant: "notification" },
     ],
@@ -143,7 +145,12 @@ export function Sidebar({
 
   const fetchUserProfile = async () => {
     try {
-      const { data } = await axios.get("http://localhost:5001/api/users/me", { withCredentials: true });
+      const token = localStorage.getItem("admin_token");
+      const { data } = await axios.get("http://localhost:5000/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       if (data.success && data.user) {
         setUserData({
           name: data.user.name,
@@ -466,8 +473,9 @@ const UserProfileFooter = memo(({ isOpen, user }: { isOpen: boolean; user: any }
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:4000/api/users/logout", {}, { withCredentials: true });
-      window.location.href = "/login";
+      // For now just clear local storage if no specialized logout route exists
+      localStorage.removeItem("admin_token");
+      window.location.href = "/admin/auth/signIn";
     } catch (e) { console.error(e); }
   };
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { registerEmployee, getAllEmployees } from "../Controllers/AdminController.js";
+import { registerEmployee, getAllEmployees, deleteUser, toggleEmployeeStatus } from "../Controllers/AdminController.js";
 import { protect } from "../Middlewares/AuthMiddleware.js";
 import { authorizeRoles } from "../Middlewares/RoleMiddleware.js";
 
@@ -11,5 +11,7 @@ router.use(authorizeRoles("ADMIN"));
 
 router.post("/employees/register", registerEmployee);
 router.get("/employees", getAllEmployees);
+router.delete("/users/:id", deleteUser);
+router.patch("/employees/:id/toggle-status", toggleEmployeeStatus);
 
 export default router;

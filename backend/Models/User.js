@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema(
     temporaryType: { type: String },
     phoneNumber: { type: String },
     reportingManager: { type: String },
+    employeeId: { type: String, unique: true, sparse: true },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

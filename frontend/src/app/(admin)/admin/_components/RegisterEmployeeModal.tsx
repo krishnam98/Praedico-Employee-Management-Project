@@ -28,6 +28,7 @@ export default function RegisterEmployeeModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [registeredId, setRegisteredId] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -52,6 +53,7 @@ export default function RegisterEmployeeModal({
       );
 
       if (response.data.success) {
+        setRegisteredId(response.data.data.employeeId);
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
@@ -110,7 +112,10 @@ export default function RegisterEmployeeModal({
               </div>
               <h3 className="text-xl font-bold text-white">Success!</h3>
               <p className="text-slate-400 text-center mt-2">
-                Employee registered successfully. Credentials have been sent to their email.
+                Employee registered successfully with ID: <span className="text-indigo-400 font-bold">{registeredId}</span>
+              </p>
+              <p className="text-slate-400 text-center text-xs mt-1">
+                Credentials have been sent to their email.
               </p>
             </div>
           ) : (

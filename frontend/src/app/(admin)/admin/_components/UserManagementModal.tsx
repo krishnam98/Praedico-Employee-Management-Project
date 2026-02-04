@@ -120,7 +120,7 @@ export default function UserManagementModal({
       });
 
       const response = await axios.get(
-        `http://localhost:5001/api/users/all?${params}`,
+        `http://localhost:5000/api/users/all?${params}`,
         { withCredentials: true }
       );
 
@@ -140,7 +140,7 @@ export default function UserManagementModal({
   const fetchStats = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5001/api/users/stats",
+        "http://localhost:5000/api/users/stats",
         { withCredentials: true }
       );
 
@@ -156,7 +156,7 @@ export default function UserManagementModal({
   const handleDeleteUser = async (userId: string) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5001/api/users/${userId}`,
+        `http://localhost:5000/api/users/${userId}`,
         { withCredentials: true }
       );
 
@@ -179,7 +179,7 @@ const handleToggleActive = async (userId: string) => {
   
   try {
     const response = await axios.patch(
-      `http://localhost:5001/api/users/${userId}/toggle-active`,
+      `http://localhost:5000/api/users/${userId}/toggle-active`,
       {}, // Empty body
       { 
         withCredentials: true,
