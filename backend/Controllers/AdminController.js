@@ -3,6 +3,7 @@ import Counter from "../Models/Counter.js";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "../Utils/sendEmail.js";
 
+
 /**
  * @desc    Register a new employee by Admin
  * @route   POST /api/admin/employees/register

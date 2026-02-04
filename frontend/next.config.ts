@@ -1,14 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/',
-        destination: '/employee/dashboard',
-      },
-    ];
-  },
+  // Removed rewrite rule that was causing conflicts
 };
 
 export default nextConfig;

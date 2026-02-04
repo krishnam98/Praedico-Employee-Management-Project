@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Filter, 
-  Download, 
-  Mail, 
-  Calendar, 
-  MoreVertical, 
-  Loader2, 
+import {
+  Users,
+  UserPlus,
+  Search,
+  Filter,
+  Download,
+  Mail,
+  Calendar,
+  MoreVertical,
+  Loader2,
   AlertCircle,
   ChevronLeft,
   ChevronRight,
@@ -26,16 +26,16 @@ import axios from "axios";
 import RegisterEmployeeModal from "../_components/RegisterEmployeeModal";
 
 // --- Custom Premium Select Component ---
-function CustomSelect({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder, 
-  icon: Icon 
-}: { 
-  value: string; 
-  onChange: (val: string) => void; 
-  options: (string | undefined)[]; 
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  icon: Icon
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: (string | undefined)[];
   placeholder: string;
   icon: any;
 }) {
@@ -135,7 +135,7 @@ export default function EmployeesPage() {
       );
 
       if (response.data.success) {
-        setEmployees(prev => prev.map(emp => 
+        setEmployees(prev => prev.map(emp =>
           emp._id === id ? { ...emp, isActive: !currentStatus } : emp
         ));
         setActiveMenu(null);
@@ -191,7 +191,7 @@ export default function EmployeesPage() {
   }, []);
 
   const filteredEmployees = employees.filter((emp) => {
-    const matchesSearch = 
+    const matchesSearch =
       emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.employeeId?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -268,7 +268,7 @@ export default function EmployeesPage() {
               className="w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
             />
           </div>
-          
+
           <div className="flex gap-2 w-full md:w-auto">
             <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 transition-all">
               <Download className="h-5 w-5" />
@@ -278,33 +278,33 @@ export default function EmployeesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <CustomSelect 
-            value={designationFilter} 
-            onChange={setDesignationFilter} 
-            options={designations} 
-            placeholder="All Designations" 
-            icon={Filter} 
+          <CustomSelect
+            value={designationFilter}
+            onChange={setDesignationFilter}
+            options={designations}
+            placeholder="All Designations"
+            icon={Filter}
           />
-          <CustomSelect 
-            value={categoryFilter} 
-            onChange={setCategoryFilter} 
-            options={categories} 
-            placeholder="All Departments" 
-            icon={ShieldAlert} 
+          <CustomSelect
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={categories}
+            placeholder="All Departments"
+            icon={ShieldAlert}
           />
-          <CustomSelect 
-            value={typeFilter} 
-            onChange={setTypeFilter} 
-            options={types} 
-            placeholder="All Types" 
-            icon={Calendar} 
+          <CustomSelect
+            value={typeFilter}
+            onChange={setTypeFilter}
+            options={types}
+            placeholder="All Types"
+            icon={Calendar}
           />
-          <CustomSelect 
-            value={statusFilter} 
-            onChange={setStatusFilter} 
-            options={["active", "deactivated"]} 
-            placeholder="All Status" 
-            icon={ShieldAlert} 
+          <CustomSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={["active", "deactivated"]}
+            placeholder="All Status"
+            icon={ShieldAlert}
           />
         </div>
       </div>
@@ -323,7 +323,7 @@ export default function EmployeesPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Error Fetching Data</h3>
             <p className="text-slate-400 max-w-sm">{error}</p>
-            <button 
+            <button
               onClick={fetchEmployees}
               className="mt-6 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
             >
@@ -360,7 +360,7 @@ export default function EmployeesPage() {
                 {filteredEmployees.map((employee) => (
                   <tr key={employee._id} className="hover:bg-white/5 transition-colors group">
                     <td className="py-6 px-6">
-                      <code 
+                      <code
                         title={employee.employeeId || employee._id}
                         className="text-xs bg-indigo-500/10 px-3 py-1.5 rounded-lg text-indigo-400 font-bold border border-indigo-500/20 cursor-default hover:bg-indigo-500/20 transition-all"
                       >
@@ -394,11 +394,10 @@ export default function EmployeesPage() {
                       </span>
                     </td>
                     <td className="py-6 px-6">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest ${
-                        employee.isActive 
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest ${employee.isActive
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                      }`}>
+                        }`}>
                         <div className={`h-1.5 w-1.5 rounded-full ${employee.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
                         {employee.isActive ? 'Active' : 'Deactivated'}
                       </span>
@@ -429,7 +428,7 @@ export default function EmployeesPage() {
                     </td>
                     <td className="py-6 px-6 text-right">
                       <div className="relative inline-block text-left">
-                        <button 
+                        <button
                           onClick={() => setActiveMenu(activeMenu === employee._id ? null : employee._id)}
                           className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-600 text-slate-400 hover:text-white transition-all focus:ring-2 focus:ring-indigo-500/50"
                         >
@@ -444,11 +443,10 @@ export default function EmployeesPage() {
                             <div className="p-2 space-y-1">
                               <button
                                 onClick={() => handleToggleStatus(employee._id, employee.isActive)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                                  employee.isActive 
-                                    ? 'text-rose-400 hover:bg-rose-500/10' 
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${employee.isActive
+                                    ? 'text-rose-400 hover:bg-rose-500/10'
                                     : 'text-emerald-400 hover:bg-emerald-500/10'
-                                }`}
+                                  }`}
                               >
                                 {employee.isActive ? (
                                   <>
@@ -462,7 +460,7 @@ export default function EmployeesPage() {
                                   </>
                                 )}
                               </button>
-                              
+
                               <button
                                 onClick={() => handleDelete(employee._id)}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10 transition-all"

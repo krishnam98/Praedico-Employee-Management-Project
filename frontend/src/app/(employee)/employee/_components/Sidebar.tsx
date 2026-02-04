@@ -133,15 +133,13 @@ export function Sidebar({
   onToggle,
   onUserManagementClick,
 }: SidebarProps) {
-  const [isClient, setIsClient] = useState(false);
-  const [userData, setUserData] = useState({ 
-    name: "Loading...", 
-    email: "...", 
-    avatar: "/avatars/admin-face.png" 
+  const [userData, setUserData] = useState({
+    name: "Arjun Singh",
+    email: "admin@praedico.com",
+    avatar: "/avatars/admin-face.png"
   });
 
   useEffect(() => {
-    setIsClient(true);
     fetchUserProfile();
   }, []);
 
@@ -156,15 +154,14 @@ export function Sidebar({
         });
       }
     } catch (e) {
-      setUserData({ name: "Arjun Singh", email: "admin@praedico.com", avatar: "/avatars/admin-face.png" });
+      // Keep default data if API fails
+      console.log("Using default user data");
     }
   };
 
   const handleToggle = useCallback(() => {
     onToggle();
   }, [onToggle]);
-
-  if (!isClient) return null;
 
   return (
     <>
@@ -218,11 +215,11 @@ export function Sidebar({
               onToggleSidebar={handleToggle}
             />
           ))}
-          
+
           {/* Promo Card - Clean Transition */}
-          <div 
+          <div
             className={cn(
-              "px-5 transition-all duration-500 ease-in-out transform", 
+              "px-5 transition-all duration-500 ease-in-out transform",
               isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 pointer-events-none absolute bottom-0"
             )}
           >
@@ -244,7 +241,7 @@ export function Sidebar({
 const SidebarHeader = memo(({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
   return (
     <div className="h-[88px] flex items-center px-6 border-b border-white/5 relative shrink-0">
-      <div 
+      <div
         onClick={!isOpen ? onToggle : undefined}
         className={cn("flex items-center gap-4 w-full transition-all duration-300 group/header", !isOpen && "cursor-pointer justify-center")}
       >
@@ -281,16 +278,16 @@ const SidebarHeader = memo(({ isOpen, onToggle }: { isOpen: boolean; onToggle: (
 });
 SidebarHeader.displayName = "SidebarHeader";
 
-const NavGroup = memo(({ 
-  group, 
-  isOpen, 
+const NavGroup = memo(({
+  group,
+  isOpen,
   onUserManagementClick,
-  onToggleSidebar 
-}: { 
-  group: MenuGroup; 
-  isOpen: boolean; 
+  onToggleSidebar
+}: {
+  group: MenuGroup;
+  isOpen: boolean;
   onUserManagementClick?: () => void;
-  onToggleSidebar: () => void; 
+  onToggleSidebar: () => void;
 }) => {
   return (
     <div className="px-4">
@@ -300,13 +297,13 @@ const NavGroup = memo(({
         </h3>
       </div>
       {!isOpen && <div className="h-px w-6 bg-white/10 mx-auto mb-4" />}
-      
+
       <div className="space-y-1">
         {group.items.map((item) => (
-          <NavItem 
-            key={item.label} 
-            item={item} 
-            isOpen={isOpen} 
+          <NavItem
+            key={item.label}
+            item={item}
+            isOpen={isOpen}
             onUserManagementClick={onUserManagementClick}
             onToggleSidebar={onToggleSidebar}
           />
@@ -317,21 +314,21 @@ const NavGroup = memo(({
 });
 NavGroup.displayName = "NavGroup";
 
-const NavItem = memo(({ 
-  item, 
-  isOpen, 
-  onUserManagementClick, 
-  onToggleSidebar 
-}: { 
-  item: MenuItem; 
-  isOpen: boolean; 
+const NavItem = memo(({
+  item,
+  isOpen,
+  onUserManagementClick,
+  onToggleSidebar
+}: {
+  item: MenuItem;
+  isOpen: boolean;
   onUserManagementClick?: () => void;
-  onToggleSidebar: () => void; 
+  onToggleSidebar: () => void;
 }) => {
   const pathname = usePathname();
   const Icon = item.icon;
   const isUserMgmt = item.label === "User Management";
-  
+
   const isActive = item.href ? pathname === item.href : false;
   const isSubActive = item.subItems?.some(sub => pathname === sub.href);
   const [isExpanded, setIsExpanded] = useState(isSubActive);
@@ -373,7 +370,7 @@ const NavItem = memo(({
         )}
       >
         <div className={cn(
-          "relative z-10 transition-colors duration-200", 
+          "relative z-10 transition-colors duration-200",
           (isActive || isSubActive) ? "text-pink-400" : "text-slate-500 group-hover:text-slate-300"
         )}>
           <Icon size={20} strokeWidth={1.5} />
@@ -388,9 +385,9 @@ const NavItem = memo(({
             {item.badge && (
               <span className={cn(
                 "px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm",
-                item.variant === "new" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : 
-                item.variant === "notification" ? "bg-rose-500 text-white" : 
-                "bg-indigo-500 text-white"
+                item.variant === "new" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" :
+                  item.variant === "notification" ? "bg-rose-500 text-white" :
+                    "bg-indigo-500 text-white"
               )}>
                 {item.badge}
               </span>
@@ -411,9 +408,9 @@ const NavItem = memo(({
 
       {/* Submenu Expansion */}
       {item.subItems && isOpen && (
-        <div 
+        <div
           className={cn(
-            "overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]", 
+            "overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
             isExpanded ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0"
           )}
         >
@@ -442,7 +439,7 @@ const PromoCard = memo(() => {
   return (
     <div className="relative rounded-2xl bg-gradient-to-br from-violet-900/50 to-fuchsia-900/50 p-5 shadow-lg overflow-hidden group cursor-pointer border border-white/10 hover:border-white/20 transition-colors">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light" />
-      
+
       {/* Moving Shine Effect */}
       <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 animate-shine-slide" />
 
@@ -450,12 +447,12 @@ const PromoCard = memo(() => {
         <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-4 border border-white/10 shadow-inner">
           <Zap className="text-white h-5 w-5 fill-white" />
         </div>
-        
+
         <h4 className="text-white font-bold text-base mb-1">Upgrade to Pro</h4>
         <p className="text-white/60 text-xs leading-relaxed mb-4">
           Unlock AI reports & more.
         </p>
-        
+
         <button className="w-full py-2.5 bg-white text-black text-xs font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
           View Pricing <ChevronRight size={12} />
         </button>
@@ -478,24 +475,24 @@ const UserProfileFooter = memo(({ isOpen, user }: { isOpen: boolean; user: any }
   return (
     <div className="flex-shrink-0 p-4 border-t border-white/5 bg-[#08090f] relative group">
       <div className={cn("flex items-center gap-3 p-2 rounded-2xl transition-all duration-300", isOpen ? "bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10" : "justify-center")}>
-        
+
         {/* AVATAR CONTAINER */}
         <div className="relative flex-shrink-0 h-10 w-10">
-          
+
           {/* ORBITING DOT ANIMATION */}
           <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-             <div className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 rounded-full animate-orbit">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]" />
-             </div>
+            <div className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 rounded-full animate-orbit">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]" />
+            </div>
           </div>
 
           {/* MAIN IMAGE */}
           <div className="h-full w-full rounded-full p-[2px] bg-gradient-to-tr from-purple-500 to-pink-500 shadow-lg relative z-10">
             <div className="h-full w-full rounded-full bg-[#0B0C15] overflow-hidden flex items-center justify-center">
               {!imgError ? (
-                <img 
-                  src={user.avatar} 
-                  alt={user.name} 
+                <img
+                  src={user.avatar}
+                  alt={user.name}
                   className="h-full w-full object-cover"
                   onError={() => setImgError(true)}
                 />
@@ -518,7 +515,7 @@ const UserProfileFooter = memo(({ isOpen, user }: { isOpen: boolean; user: any }
 
         {/* Logout */}
         {isOpen && (
-          <button 
+          <button
             onClick={handleLogout}
             className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
             title="Logout"
@@ -527,10 +524,10 @@ const UserProfileFooter = memo(({ isOpen, user }: { isOpen: boolean; user: any }
           </button>
         )}
       </div>
-      
+
       {/* Collapsed Logout */}
       {!isOpen && (
-        <button 
+        <button
           onClick={handleLogout}
           className="mt-4 w-full p-2 flex justify-center text-slate-500 hover:text-rose-400 transition-colors"
           title="Logout"
