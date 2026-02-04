@@ -65,7 +65,7 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     title: "Overview",
     items: [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3, badge: "New", variant: "new" },
       {
         label: "eCommerce",

@@ -13,7 +13,9 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  Phone,
+  UserCheck
 } from "lucide-react";
 import axios from "axios";
 import RegisterEmployeeModal from "../_components/RegisterEmployeeModal";
@@ -23,6 +25,12 @@ interface Employee {
   name: string;
   email: string;
   role: string;
+  designation?: string;
+  category?: string;
+  employeeType?: string;
+  temporaryType?: string;
+  phoneNumber?: string;
+  reportingManager?: string;
   createdAt: string;
 }
 
@@ -61,7 +69,9 @@ export default function EmployeesPage() {
   const filteredEmployees = employees.filter(
     (emp) =>
       emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+      emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.designation?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatDate = (dateString: string) => {
@@ -170,50 +180,78 @@ export default function EmployeesPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-900/50 border-b border-slate-700/50">
-                  <th className="py-5 px-8 text-slate-400 font-bold text-xs uppercase tracking-widest">Employee</th>
-                  <th className="py-5 px-8 text-slate-400 font-bold text-xs uppercase tracking-widest">Role</th>
-                  <th className="py-5 px-8 text-slate-400 font-bold text-xs uppercase tracking-widest">Status</th>
-                  <th className="py-5 px-8 text-slate-400 font-bold text-xs uppercase tracking-widest">Joined Date</th>
-                  <th className="py-5 px-8 text-slate-400 font-bold text-xs uppercase tracking-widest text-right">Actions</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Employee ID</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Employee</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[120px]">Designation</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[220px]">Department</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Type</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Contact</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[200px]">Manager</th>
+                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {filteredEmployees.map((employee) => (
                   <tr key={employee._id} className="hover:bg-white/5 transition-colors group">
-                    <td className="py-6 px-8">
+                    <td className="py-6 px-6">
+                      <code 
+                        title={employee._id}
+                        className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-500 font-mono cursor-default hover:text-indigo-400 transition-colors"
+                      >
+                        {employee._id.slice(0, 6).toUpperCase()}...
+                      </code>
+                    </td>
+                    <td className="py-6 px-6">
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg ring-2 ring-white/5 group-hover:scale-110 transition-transform">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg ring-2 ring-white/5 group-hover:scale-110 transition-transform shrink-0">
                           {employee.name.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                          <p className="text-white font-bold text-lg leading-none mb-1 group-hover:text-indigo-400 transition-colors">
+                        <div className="min-w-[150px]">
+                          <p className="text-white font-bold text-sm leading-none mb-1 group-hover:text-indigo-400 transition-colors truncate">
                             {employee.name}
                           </p>
-                          <div className="flex items-center gap-1.5 text-slate-500 text-sm font-medium">
-                            <Mail className="h-3.5 w-3.5" />
+                          <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-medium truncate">
+                            <Mail className="h-3 w-3" />
                             {employee.email}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-6 px-8">
-                      <span className="px-4 py-1.5 rounded-xl text-xs font-black bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-tighter">
-                        {employee.role}
+                    <td className="py-6 px-6 min-w-[120px]">
+                      <span className="text-slate-300 font-semibold text-xs whitespace-nowrap">
+                        {employee.designation || "Not Set"}
                       </span>
                     </td>
-                    <td className="py-6 px-8">
-                      <span className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                        Active
+                    <td className="py-6 px-6 min-w-[220px]">
+                      <span className="px-3 py-1 rounded-lg text-[10px] font-black bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
+                        {employee.category || "General"}
                       </span>
                     </td>
-                    <td className="py-6 px-8">
-                      <div className="flex items-center gap-2 text-slate-300 font-medium">
-                        <Calendar className="h-4 w-4 text-slate-500" />
-                        {formatDate(employee.createdAt)}
+                    <td className="py-6 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className={`text-[11px] font-bold ${employee.employeeType === 'Temporary' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                          {employee.employeeType || "Regular"}
+                        </span>
+                        {employee.temporaryType && (
+                          <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded w-fit italic">
+                            {employee.temporaryType}
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td className="py-6 px-8 text-right">
+                    <td className="py-6 px-6">
+                      <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
+                        <Phone className="h-3.5 w-3.5 text-slate-500" />
+                        {employee.phoneNumber || "N/A"}
+                      </div>
+                    </td>
+                    <td className="py-6 px-6 min-w-[200px]">
+                      <div className="flex items-center gap-2 text-slate-300 font-medium text-xs">
+                        <UserCheck className="h-3.5 w-3.5 text-indigo-500/50" />
+                        {employee.reportingManager || "Owner"}
+                      </div>
+                    </td>
+                    <td className="py-6 px-6 text-right">
                       <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-600 text-slate-400 hover:text-white transition-all">
                         <MoreVertical className="h-5 w-5" />
                       </button>
