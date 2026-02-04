@@ -9,7 +9,17 @@ import { sendEmail } from "../Utils/sendEmail.js";
  */
 export const registerEmployee = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      designation, 
+      category, 
+      employeeType, 
+      temporaryType, 
+      phoneNumber, 
+      reportingManager 
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -34,17 +44,30 @@ export const registerEmployee = async (req, res) => {
       email,
       password: hashedPassword,
       role: "EMPLOYEE",
+      designation,
+      category,
+      employeeType,
+      temporaryType,
+      phoneNumber,
+      reportingManager,
     });
 
     // Send email with credentials
-    const message = `Welcome to the team, ${name}!\n\nYour account has been created by the Admin.\n\nEmail: ${email}\nPassword: ${password}\n\nPlease login and change your password.`;
+    const message = `Welcome to the team, ${name}!\n\nYour account has been created by the Admin.\n\nEmail: ${email}\nPassword: ${password}\nDesignation: ${designation}\nDepartment: ${category}\nReporting Manager: ${reportingManager}\n\nPlease login and change your password.`;
     
     const html = `
-      <h1>Welcome to the team, ${name}!</h1>
-      <p>Your account has been created by the Admin.</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Password:</strong> ${password}</p>
-      <p>Please login and change your password.</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
+        <h1 style="color: #4f46e5;">Welcome to the team, ${name}!</h1>
+        <p>Your account has been created by the Admin.</p>
+        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Password:</strong> ${password}</p>
+          <p><strong>Designation:</strong> ${designation}</p>
+          <p><strong>Department:</strong> ${category}</p>
+          <p><strong>Reporting Manager:</strong> ${reportingManager}</p>
+        </div>
+        <p>Please login and change your password.</p>
+      </div>
     `;
 
     try {

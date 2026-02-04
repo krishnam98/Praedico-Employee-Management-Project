@@ -22,27 +22,6 @@ export default function AdminSignIn() {
     setError("");
 
     try {
-      // Dummy Login logic for testing
-      if (email === "admin@praedico.com" && password === "admin123") {
-        console.log("✅ Dummy Admin Login Success!");
-
-        // Mock user data
-        const dummyUser = {
-          id: "dummy-admin-id",
-          name: "Admin User",
-          email: "admin@praedico.com",
-          role: "ADMIN",
-          token: "dummy-admin-token"
-        };
-
-        localStorage.setItem("admin_token", dummyUser.token);
-        localStorage.setItem("admin_user", JSON.stringify(dummyUser));
-
-        router.push("/admin/dashboard");
-        return;
-      }
-
-      // Fallback to actual backend call (if implemented/running)
       // Connect to backend (adjusting port if necessary, backend was running on 5000 in index.js)
       const response = await axios.post("http://localhost:5000/api/auth/login", {
         email,
@@ -52,12 +31,12 @@ export default function AdminSignIn() {
       if (response.data.success) {
         // Check if user is an admin
         if (response.data.data.role !== "ADMIN") {
-          setError("Access denied. Admin privileges required.");
-          setLoading(false);
-          return;
+           setError("Access denied. Admin privileges required.");
+           setLoading(false);
+           return;
         }
 
-        // Store token in localStorage
+        // Store token in localStorage (premium apps might use cookies, but this is a solid start)
         localStorage.setItem("admin_token", response.data.data.token);
         localStorage.setItem("admin_user", JSON.stringify(response.data.data));
 
@@ -76,7 +55,7 @@ export default function AdminSignIn() {
       {/* Dynamic Background Elements - Premium Glassmorphism Feel */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse delay-700"></div>
-
+      
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] opacity-10"></div>
 
@@ -147,8 +126,8 @@ export default function AdminSignIn() {
                 </div>
               )}
 
-              <Button
-                type="submit"
+              <Button 
+                type="submit" 
                 disabled={loading}
                 className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-lg shadow-[0_10px_20px_rgba(79,70,229,0.3)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
               >
@@ -171,15 +150,15 @@ export default function AdminSignIn() {
                 <span className="bg-[#1e293b]/10 backdrop-blur-md px-4 py-1 rounded-full border border-slate-800/60">Security Protocols Active</span>
               </div>
             </div>
-
+            
             <p className="text-center text-slate-500 text-xs">
-              This is a restricted area. All access is logged and monitored.
+              This is a restricted area. All access is logged and monitored. 
               <br />
               Authorized personnel only.
             </p>
           </CardFooter>
         </Card>
-
+        
         <p className="text-center mt-8 text-slate-500 text-sm font-medium">
           &copy; 2026 <span className="text-slate-400">Praedico</span> Enterprise Security
         </p>
