@@ -6,23 +6,36 @@ export const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
-    secure: Number(process.env.EMAIL_PORT) === 465, // true for 465, false for other ports
+    secure: Number(process.env.EMAIL_PORT) === 465,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
     tls: {
-      rejectUnauthorized: false // Often needed for cloud environments
-    }
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds timeout
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
+  const fromName = process.env.EMAIL_FROM_NAME || "Praedico Admin";
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER;
+
   const mailOptions = {
-    from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
+    from: `"${fromName}" <${fromEmail}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
     html: options.html,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`Detailed Email Error: ${error.message}`);
+    throw error;
+  }
 };
