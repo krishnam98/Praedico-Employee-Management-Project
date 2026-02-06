@@ -20,8 +20,16 @@ export const registerEmployee = async (req, res) => {
       employeeType, 
       temporaryType, 
       phoneNumber, 
-      reportingManager 
+      phoneNumber, 
+      reportingManager: passedReportingManager 
     } = req.body;
+
+    // If the creator is an Admin, they can assign any reporting manager.
+    // If the creator is a Manager (EMPLOYEE role), they MUST be the reporting manager.
+    let reportingManager = passedReportingManager;
+    if (req.user.role === "EMPLOYEE") {
+        reportingManager = req.user.name;
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({

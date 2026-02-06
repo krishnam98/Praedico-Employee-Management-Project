@@ -67,6 +67,17 @@ export default function RegisterEmployeeModal({
     }
   };
 
+  useEffect(() => {
+    // Check current user role to auto-set reporting manager
+    const userStr = localStorage.getItem("admin_user");
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.role === "EMPLOYEE") {
+            setFormData(prev => ({ ...prev, reportingManager: user.name }));
+        }
+    }
+  }, [isOpen]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -347,7 +358,7 @@ export default function RegisterEmployeeModal({
                       name="reportingManager"
                       value={formData.reportingManager}
                       onChange={handleChange}
-                      disabled={loadingManagers}
+                      disabled={loadingManagers || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem("admin_user") || "{}").role === "EMPLOYEE")}
                       className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none disabled:opacity-50"
                     >
                       <option value="" className="bg-slate-900">
