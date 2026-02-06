@@ -20,7 +20,6 @@ export const registerEmployee = async (req, res) => {
       employeeType, 
       temporaryType, 
       phoneNumber, 
-      phoneNumber, 
       reportingManager: passedReportingManager 
     } = req.body;
 
