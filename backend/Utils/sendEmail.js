@@ -1,33 +1,36 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export const sendEmail = async (options) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  // Create a transporter using SMTP
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-  console.log(`Attempting to send email via Resend API for: ${options.email}`);
+  console.log(`Attempting to send email via Nodemailer for: ${options.email}`);
 
-  const fromName = process.env.EMAIL_FROM_NAME || "Praedico Admin";
-  // NOTE: Resend usually requires a verified domain if using custom from address.
-  // For the 'onboarding' key, it might require a specific sender.
-  const fromEmail = "onboarding@resend.dev"; // Default Resend test sender
+  const fromName = process.env.EMAIL_FROM_NAME || "Employee Management";
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER;
+
+  const mailOptions = {
+    from: `"${fromName}" <${fromEmail}>`,
+    to: options.email,
+    subject: options.subject,
+    text: options.message,
+    html: options.html,
+  };
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${fromName} <${fromEmail}>`,
-      to: [options.email],
-      subject: options.subject,
-      text: options.message,
-      html: options.html,
-    });
-
-    if (error) {
-      console.error(`Resend API Error: ${error.message}`);
-      throw new Error(error.message);
-    }
-
-    console.log(`Email sent successfully via Resend: ${data.id}`);
-    return data;
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully: ${info.messageId}`);
+    return info;
   } catch (error) {
-    console.error(`Detailed Email Error (Resend): ${error.message}`);
+    console.error(`Detailed Email Error (Nodemailer): ${error.message}`);
     throw error;
   }
 };

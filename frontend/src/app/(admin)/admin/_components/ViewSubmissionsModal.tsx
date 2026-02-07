@@ -80,7 +80,7 @@ export default function ViewSubmissionsModal({
         onClose();
       }
     } catch (err: any) {
-        alert(err.response?.data?.message || "Failed to approve");
+      alert(err.response?.data?.message || "Failed to approve");
     } finally {
       setProcessing(null);
     }
@@ -88,7 +88,7 @@ export default function ViewSubmissionsModal({
 
   const handleReject = async (submissionId: string) => {
     if (!window.confirm("Are you sure you want to reject this submission? The task will be marked as Rejected.")) {
-        return;
+      return;
     }
     setProcessing(submissionId);
     try {
@@ -106,9 +106,9 @@ export default function ViewSubmissionsModal({
         onClose();
       }
     } catch (err: any) {
-        alert(err.response?.data?.message || "Failed to reject");
+      alert(err.response?.data?.message || "Failed to reject");
     } finally {
-        setProcessing(null);
+      setProcessing(null);
     }
   };
 
@@ -138,77 +138,82 @@ export default function ViewSubmissionsModal({
           </div>
 
           {loading ? (
-             <div className="flex flex-col items-center justify-center py-12">
-               <Loader2 className="h-10 w-10 text-emerald-500 animate-spin mb-3" />
-               <p className="text-slate-400 text-sm font-medium">Loading submissions...</p>
-             </div>
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-10 w-10 text-emerald-500 animate-spin mb-3" />
+              <p className="text-slate-400 text-sm font-medium">Loading submissions...</p>
+            </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="h-10 w-10 text-rose-500 mb-3" />
-                <p className="text-white font-medium">No submissions found or error occurred.</p>
+              <AlertCircle className="h-10 w-10 text-rose-500 mb-3" />
+              <p className="text-white font-medium">No submissions found or error occurred.</p>
             </div>
           ) : submissions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/50">
-                <div className="h-16 w-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                    <FileText className="h-8 w-8 text-slate-600" />
-                </div>
-                <p className="text-slate-400 font-medium">No submissions yet.</p>
+              <div className="h-16 w-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                <FileText className="h-8 w-8 text-slate-600" />
+              </div>
+              <p className="text-slate-400 font-medium">No submissions yet.</p>
             </div>
           ) : (
             <div className="space-y-4">
-                {submissions.map((sub) => (
-                    <div key={sub._id} className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-slate-800/50">
-                        <div className="flex flex-col md:flex-row justify-between gap-4">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <h3 className="text-lg font-bold text-white">{sub.title}</h3>
-                                    <span className="text-xs font-mono bg-slate-900 text-slate-400 px-2 py-1 rounded-md border border-slate-700">{sub.submittedId}</span>
-                                </div>
-                                <div className="text-sm text-slate-400 flex items-center gap-2">
-                                    <span className="text-indigo-400 font-semibold">{sub.employee.name}</span>
-                                    <span>•</span>
-                                    <span>{new Date(sub.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
-                                    {sub.description}
-                                </p>
-                                {sub.attachment && (
-                                    <a href={sub.attachment} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 mt-2">
-                                        <Download className="h-3 w-3" />
-                                        View Attachment
-                                    </a>
-                                )}
-                            </div>
-                            
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => handleReject(sub._id)}
-                                        disabled={processing === sub._id}
-                                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2"
-                                    >
-                                        {processing === sub._id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <X className="h-4 w-4" />
-                                        )}
-                                        Reject
-                                    </button>
-                                    <button 
-                                        onClick={() => handleApprove(sub._id)}
-                                        disabled={processing === sub._id}
-                                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-                                    >
-                                        {processing === sub._id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Check className="h-4 w-4" />
-                                        )}
-                                        Approve
-                                    </button>
-                                </div>
-                        </div>
+              {submissions.map((sub) => (
+                <div key={sub._id} className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 transition-all hover:bg-slate-800/50">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-bold text-white">{sub.title}</h3>
+                        <span className="text-xs font-mono bg-slate-900 text-slate-400 px-2 py-1 rounded-md border border-slate-700">{sub.submittedId}</span>
+                      </div>
+                      <div className="text-sm text-slate-400 flex items-center gap-2">
+                        <span className="text-indigo-400 font-semibold">{sub.employee.name}</span>
+                        <span>•</span>
+                        <span>{new Date(sub.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
+                        {sub.description}
+                      </p>
+                      {sub.attachment && (
+                        <a
+                          href={sub.attachment.startsWith("http") ? sub.attachment : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${sub.attachment}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 mt-2"
+                        >
+                          <Download className="h-3 w-3" />
+                          {sub.attachment.startsWith("uploads/") ? "Download Attachment" : "View Attachment"}
+                        </a>
+                      )}
                     </div>
-                ))}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleReject(sub._id)}
+                        disabled={processing === sub._id}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2"
+                      >
+                        {processing === sub._id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleApprove(sub._id)}
+                        disabled={processing === sub._id}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                      >
+                        {processing === sub._id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
+                        Approve
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

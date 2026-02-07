@@ -60,6 +60,25 @@ interface SidebarProps {
   onUserManagementClick?: () => void;
 }
 
+interface SidebarHeaderProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+interface NavGroupProps {
+  group: MenuGroup;
+  isOpen: boolean;
+  onUserManagementClick?: () => void;
+  onToggleSidebar: () => void;
+}
+
+interface NavItemProps {
+  item: MenuItem;
+  isOpen: boolean;
+  onUserManagementClick?: () => void;
+  onToggleSidebar: () => void;
+}
+
 // ==========================================
 // MENU CONFIGURATION
 // ==========================================
@@ -171,13 +190,13 @@ export function Sidebar({
         });
       }
     } catch (e) {
-      setUserData({ 
-        name: "Arjun Singh", 
-        email: "admin@praedico.com", 
-        avatar: "/avatars/admin-face.png", 
-        role: "ADMIN", 
+      setUserData({
+        name: "Arjun Singh",
+        email: "admin@praedico.com",
+        avatar: "/avatars/admin-face.png",
+        role: "ADMIN",
         designation: "Administrator",
-        isSeniorEmployee: true 
+        isSeniorEmployee: true
       });
     }
   };
@@ -218,9 +237,8 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "relative h-screen flex flex-col border-r border-white/5 bg-[#0B0C15] text-slate-400 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.4)]",
-          "transition-all duration-500 cubic-bezier(0.2, 0.8, 0.2, 1)", // Smooth, premium easing
-          isOpen ? "w-[280px]" : "w-[88px]"
+          "fixed md:relative flex flex-col h-screen bg-[#0B0C15] border-r border-white/5 transition-all duration-500 ease-in-out z-50 shadow-[4px_0_24px_rgba(0,0,0,0.4)]",
+          isOpen ? "w-[280px] translate-x-0" : "w-[280px] md:w-[88px] -translate-x-full md:translate-x-0 overflow-hidden"
         )}
       >
         {/* Subtle Noise Texture */}
@@ -263,7 +281,7 @@ export function Sidebar({
 // SUB-COMPONENTS (Memoized for Performance)
 // ==========================================
 
-const SidebarHeader = memo(({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
+const SidebarHeader = memo(({ isOpen, onToggle }: SidebarHeaderProps) => {
   return (
     <div className="h-[88px] flex items-center px-6 border-b border-white/5 relative shrink-0">
       <div
@@ -293,7 +311,7 @@ const SidebarHeader = memo(({ isOpen, onToggle }: { isOpen: boolean; onToggle: (
       {isOpen && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#0B0C15] border border-white/10 rounded-full flex items-center justify-center text-slate-400 shadow-xl hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all duration-300 z-50 group/toggle"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#0B0C15] border border-white/10 rounded-full hidden md:flex items-center justify-center text-slate-400 shadow-xl hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all duration-300 z-50 group/toggle"
         >
           <ChevronLeft size={14} className="group-hover/toggle:-translate-x-0.5 transition-transform" />
         </button>
@@ -303,53 +321,40 @@ const SidebarHeader = memo(({ isOpen, onToggle }: { isOpen: boolean; onToggle: (
 });
 SidebarHeader.displayName = "SidebarHeader";
 
-const NavGroup = memo(({
-  group,
-  isOpen,
-  onUserManagementClick,
-  onToggleSidebar
+// Helper component for NavItem to handle Link vs Button logic
+const NavItemWrapper = ({
+  item,
+  isUserMgmt,
+  onClick,
+  children,
+  className
 }: {
-  group: MenuGroup;
-  isOpen: boolean;
-  onUserManagementClick?: () => void;
-  onToggleSidebar: () => void;
+  item: MenuItem;
+  isUserMgmt: boolean;
+  onClick: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+  className?: string;
 }) => {
+  if (item.subItems || isUserMgmt) {
+    return (
+      <button onClick={onClick} className={className} type="button">
+        {children}
+      </button>
+    );
+  }
   return (
-    <div className="px-4">
-      <div className={cn("transition-all duration-300", isOpen ? "opacity-100 h-auto mb-3" : "opacity-0 h-0 mb-0 overflow-hidden")}>
-        <h3 className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest select-none">
-          {group.title}
-        </h3>
-      </div>
-      {!isOpen && <div className="h-px w-6 bg-white/10 mx-auto mb-4" />}
-
-      <div className="space-y-1">
-        {group.items.map((item) => (
-          <NavItem
-            key={item.label}
-            item={item}
-            isOpen={isOpen}
-            onUserManagementClick={onUserManagementClick}
-            onToggleSidebar={onToggleSidebar}
-          />
-        ))}
-      </div>
-    </div>
+    <Link href={item.href || "/"} className={className}>
+      {children}
+    </Link>
   );
-});
-NavGroup.displayName = "NavGroup";
+};
 
 const NavItem = memo(({
   item,
   isOpen,
   onUserManagementClick,
   onToggleSidebar
-}: {
-  item: MenuItem;
-  isOpen: boolean;
-  onUserManagementClick?: () => void;
-  onToggleSidebar: () => void;
-}) => {
+}: NavItemProps) => {
   const pathname = usePathname();
   const Icon = item.icon;
   const isUserMgmt = item.label === "User Management";
@@ -376,18 +381,16 @@ const NavItem = memo(({
     }
   };
 
-  const Wrapper = ({ children, className }: any) => {
-    if (item.subItems || isUserMgmt) return <button onClick={handleClick} className={className} type="button">{children}</button>;
-    return <Link href={item.href!} className={className}>{children}</Link>;
-  };
-
   // Active Gradient Logic (Matches Dashboard Header)
   const activeClass = "bg-gradient-to-r from-purple-500/20 via-pink-500/10 to-transparent text-white border-l-2 border-pink-500";
   const inactiveClass = "text-slate-400 hover:bg-white/5 hover:text-slate-200 border-l-2 border-transparent";
 
   return (
     <div className="relative group/nav">
-      <Wrapper
+      <NavItemWrapper
+        item={item}
+        isUserMgmt={isUserMgmt}
+        onClick={handleClick}
         className={cn(
           "relative flex items-center w-full p-3 text-sm font-medium transition-all duration-200 group rounded-r-xl",
           (isActive || isSubActive) ? activeClass : inactiveClass,
@@ -429,7 +432,7 @@ const NavItem = memo(({
             {item.label}
           </div>
         )}
-      </Wrapper>
+      </NavItemWrapper>
 
       {/* Submenu Expansion */}
       {item.subItems && isOpen && (
@@ -459,6 +462,37 @@ const NavItem = memo(({
   );
 });
 NavItem.displayName = "NavItem";
+
+const NavGroup = memo(({
+  group,
+  isOpen,
+  onUserManagementClick,
+  onToggleSidebar
+}: NavGroupProps) => {
+  return (
+    <div className="px-4">
+      <div className={cn("transition-all duration-300", isOpen ? "opacity-100 h-auto mb-3" : "opacity-0 h-0 mb-0 overflow-hidden")}>
+        <h3 className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest select-none">
+          {group.title}
+        </h3>
+      </div>
+      {!isOpen && <div className="h-px w-6 bg-white/10 mx-auto mb-4" />}
+
+      <div className="space-y-1">
+        {group.items.map((item) => (
+          <NavItem
+            key={item.label}
+            item={item}
+            isOpen={isOpen}
+            onUserManagementClick={onUserManagementClick}
+            onToggleSidebar={onToggleSidebar}
+          />
+        ))}
+      </div>
+    </div>
+  );
+});
+NavGroup.displayName = "NavGroup";
 
 const PromoCard = memo(() => {
   return (

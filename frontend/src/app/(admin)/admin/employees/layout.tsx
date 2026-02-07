@@ -14,6 +14,14 @@ export default function EmployeesLayout({
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar
         role="admin"
         isOpen={isSidebarOpen}
@@ -22,7 +30,7 @@ export default function EmployeesLayout({
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardNavbar />
+        <DashboardNavbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>

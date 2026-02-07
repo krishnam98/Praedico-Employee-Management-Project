@@ -99,14 +99,14 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
 
         try {
             const token = localStorage.getItem("admin_token");
-            let attachmentValue = "";
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("description", description);
 
-            // If file is selected, convert to base64 or upload to server
             if (attachmentType === "file" && attachmentFile) {
-                // For now, we'll store the file name and indicate it's a file
-                attachmentValue = `[FILE] ${attachmentFile.name}`;
-            } else if (attachmentType === "link") {
-                attachmentValue = attachmentLink;
+                formData.append("attachment", attachmentFile);
+            } else if (attachmentType === "link" && attachmentLink) {
+                formData.append("attachment", attachmentLink);
             }
 
             let response;
@@ -118,30 +118,20 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
                     {
                         method: "PUT",
                         headers: {
-                            "Content-Type": "application/json",
                             "Authorization": `Bearer ${token}`,
                         },
-                        body: JSON.stringify({
-                            title,
-                            description,
-                            attachment: attachmentValue,
-                        }),
+                        body: formData,
                     }
                 );
             } else {
                 // Create new submission
+                formData.append("taskId", task._id);
                 response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/tasks/submit`, {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`,
                     },
-                    body: JSON.stringify({
-                        taskId: task._id,
-                        title,
-                        description,
-                        attachment: attachmentValue,
-                    }),
+                    body: formData,
                 });
             }
 

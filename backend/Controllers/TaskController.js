@@ -20,6 +20,12 @@ export const getMyTasks = async (req, res) => {
 export const submitTask = async (req, res) => {
     try {
         const { taskId, title, description, attachment } = req.body;
+        let finalAttachment = attachment;
+
+        // If a file was uploaded, use its path
+        if (req.file) {
+            finalAttachment = req.file.path.replace(/\\/g, "/"); // Normalize path separators
+        }
 
         // Generate submittedId
         const counter = await Counter.findOneAndUpdate(
@@ -34,7 +40,7 @@ export const submitTask = async (req, res) => {
             employee: req.user._id,
             title,
             description,
-            attachment,
+            attachment: finalAttachment,
             submittedId,
         });
 
@@ -102,7 +108,13 @@ export const updateSubmission = async (req, res) => {
         // Update the submission
         submission.title = title;
         submission.description = description;
-        submission.attachment = attachment;
+
+        if (req.file) {
+            submission.attachment = req.file.path.replace(/\\/g, "/");
+        } else if (attachment !== undefined) {
+            submission.attachment = attachment;
+        }
+
         await submission.save();
 
         res.status(200).json({ success: true, data: submission });

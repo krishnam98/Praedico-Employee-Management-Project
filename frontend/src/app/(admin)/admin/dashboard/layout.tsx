@@ -15,6 +15,14 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <Sidebar
         role="admin"
@@ -26,7 +34,7 @@ export default function AdminLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Navbar */}
-        <DashboardNavbar />
+        <DashboardNavbar onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
