@@ -71,7 +71,7 @@ export default function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => v
 
   return (
     <header
-      className={`sticky top-0 z-50 flex h-20 w-full items-center justify-between px-6 transition-all duration-500 ease-in-out border-b ${scrolled
+      className={`sticky top-0 z-50 flex h-20 w-full items-center justify-between px-4 md:px-6 transition-all duration-500 ease-in-out border-b ${scrolled
         ? "bg-[#0f172a]/90 backdrop-blur-xl border-slate-800 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
         : "bg-[#0f172a] border-transparent shadow-none"
         }`}
@@ -80,13 +80,13 @@ export default function DashboardNavbar({ onMenuClick }: { onMenuClick?: () => v
       {/* =======================
           LEFT: BRAND & SEARCH
          ======================= */}
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-3 md:gap-8">
 
         {/* Mobile Toggle */}
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden text-slate-400 hover:text-white hover:bg-white/10"
+          className="md:hidden text-slate-400 hover:text-white hover:bg-white/10 h-10 w-10"
           onClick={onMenuClick}
         >
           <Menu className="h-6 w-6" />

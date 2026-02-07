@@ -237,7 +237,7 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed md:relative flex flex-col h-screen bg-[#0B0C15] border-r border-white/5 transition-all duration-500 ease-in-out z-50 shadow-[4px_0_24px_rgba(0,0,0,0.4)]",
+          "fixed md:relative flex flex-col h-screen bg-[#0B0C15] border-r border-white/5 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) z-50 shadow-[4px_0_24px_rgba(0,0,0,0.4)]",
           isOpen ? "w-[280px] translate-x-0" : "w-[280px] md:w-[88px] -translate-x-full md:translate-x-0 overflow-hidden"
         )}
       >
@@ -307,11 +307,11 @@ const SidebarHeader = memo(({ isOpen, onToggle }: SidebarHeaderProps) => {
         </div>
       </div>
 
-      {/* Redesigned Toggle Button */}
+      {/* Redesigned Toggle Button - Visible on both Mobile and Desktop when open */}
       {isOpen && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#0B0C15] border border-white/10 rounded-full hidden md:flex items-center justify-center text-slate-400 shadow-xl hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all duration-300 z-50 group/toggle"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 h-7 w-7 bg-[#0B0C15] border border-white/10 rounded-full flex items-center justify-center text-slate-400 shadow-xl hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all duration-300 z-50 group/toggle"
         >
           <ChevronLeft size={14} className="group-hover/toggle:-translate-x-0.5 transition-transform" />
         </button>
