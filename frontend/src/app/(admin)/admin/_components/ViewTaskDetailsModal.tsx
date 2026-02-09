@@ -28,8 +28,11 @@ export default function ViewTaskDetailsModal({
   const statusColors = {
     "Completed": "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
     "Work In Progress": "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    "In Progress": "text-amber-400 bg-amber-500/10 border-amber-500/20",
     "Overdue": "text-rose-400 bg-rose-500/10 border-rose-500/20",
     "Created": "text-slate-400 bg-slate-700/50 border-slate-600",
+    "Submitted": "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    "Rejected": "text-rose-400 bg-rose-500/10 border-rose-500/20",
     "default": "text-slate-400 bg-slate-700/50 border-slate-600"
   };
 
@@ -55,9 +58,25 @@ export default function ViewTaskDetailsModal({
                <div className="h-16 w-16 rounded-2xl bg-slate-800 flex items-center justify-center border border-slate-700 shadow-xl">
                  <CheckSquare className="h-8 w-8 text-indigo-400" />
                </div>
-               <span className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border ${statusStyle}`}>
-                  {task.status}
-               </span>
+                <div className="flex flex-wrap items-center gap-2">
+                   {/* Overdue Badge */}
+                   {(() => {
+                      const isOverdue = task.deadline && (
+                         (task.status === "Completed" || task.status === "Submitted")
+                            ? (task.submittedAt && new Date(task.submittedAt) > new Date(task.deadline))
+                            : (new Date() > new Date(task.deadline))
+                      );
+                      return isOverdue ? (
+                         <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border text-rose-400 bg-rose-500/10 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]">
+                            Overdue
+                         </span>
+                      ) : null;
+                   })()}
+
+                   <span className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border ${statusStyle}`}>
+                      {task.status}
+                   </span>
+                </div>
             </div>
             
             <div>
@@ -76,15 +95,29 @@ export default function ViewTaskDetailsModal({
           </div>
 
           <div className="space-y-8">
-             {/* Description */}
              <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <FileText className="h-4 w-4" /> Description
                 </h3>
-                <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                <p className="text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
                     {task.description || "No description provided."}
                 </p>
              </div>
+
+             {/* Rejection Reason */}
+             {task.status === "Rejected" && task.rejectionReason && (
+                <div className="bg-rose-500/5 rounded-2xl p-6 border border-rose-500/20 animate-in slide-in-from-left-4 duration-500">
+                    <h3 className="text-sm font-bold text-rose-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" /> Rejection Reason
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed italic font-medium">
+                        "{task.rejectionReason}"
+                    </p>
+                    <p className="text-rose-400/50 text-[10px] uppercase font-black tracking-tighter mt-4">
+                        Admin requested changes to this task
+                    </p>
+                </div>
+             )}
 
              {/* Attachment */}
              {task.attachment && (
@@ -136,7 +169,7 @@ export default function ViewTaskDetailsModal({
                 </div>
 
                 {/* Deadline */}
-                <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50 md:col-span-2">
+                <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <Calendar className="h-4 w-4" /> Deadline Details
                     </h3>
@@ -147,17 +180,41 @@ export default function ViewTaskDetailsModal({
                         {task.deadline && (
                             <p className="text-slate-500 font-medium text-sm">
                                 {(() => {
-                                    const today = new Date();
                                     const deadline = new Date(task.deadline);
-                                    const diffTime = deadline.getTime() - today.getTime();
+                                    
+                                    const isCompletedOrSubmitted = task.status === "Completed" || task.status === "Submitted";
+                                    const comparisonDate = isCompletedOrSubmitted && task.submittedAt ? new Date(task.submittedAt) : new Date();
+                                    
+                                    const diffTime = deadline.getTime() - comparisonDate.getTime();
                                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                                     
-                                    if (diffDays < 0) return <span className="text-rose-400 font-bold">Overdue by {Math.abs(diffDays)} days</span>;
+                                    if (diffDays < 0) {
+                                       return (
+                                          <span className="text-rose-400 font-bold">
+                                             {isCompletedOrSubmitted ? "Submitted late by" : "Overdue by"} {Math.abs(diffDays)} days
+                                          </span>
+                                       );
+                                    }
                                     if (diffDays === 0) return <span className="text-amber-400 font-bold">Due Today</span>;
                                     return <span className="text-emerald-400">{diffDays} days remaining</span>;
                                 })()}
                             </p>
                         )}
+                    </div>
+                </div>
+
+                {/* Started Details */}
+                <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Clock className="h-4 w-4" /> Start Status
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-white font-bold text-2xl">
+                             {task.taskStarted ? new Date(task.taskStarted).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "Not Started"}
+                        </p>
+                        <p className="text-slate-500 font-medium text-sm">
+                            {task.taskStarted ? "Task work has been initiated" : "Pending employee action"}
+                        </p>
                     </div>
                 </div>
              </div>

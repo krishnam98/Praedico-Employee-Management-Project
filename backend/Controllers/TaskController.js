@@ -49,7 +49,8 @@ export const submitTask = async (req, res) => {
         await Task.findByIdAndUpdate(taskId, {
             status: "Submitted",
             isInProgress: false,
-            submittedAt: new Date()
+            submittedAt: new Date(),
+            rejectionReason: null
         });
 
         res.status(201).json({ success: true, data: submission });
@@ -133,12 +134,13 @@ export const updateTaskStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        if (task.status !== "Pending" && task.status !== "Overdue" && task.status !== "Created") {
+        if (task.status !== "Pending" && task.status !== "Overdue" && task.status !== "Created" && task.status !== "Rejected") {
             return res.status(400).json({ success: false, message: `Cannot change status from ${task.status}` });
         }
 
         task.isInProgress = true;
         task.status = "In Progress";
+        task.taskStarted = new Date();
         await task.save();
 
         res.status(200).json({ success: true, message: "Task marked as In Progress", data: task });

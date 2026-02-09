@@ -15,6 +15,8 @@ interface Task {
     attachment?: string;
     submittedAt?: string;
     isInProgress?: boolean;
+    taskStarted?: string;
+    rejectionReason?: string;
 }
 
 export default function MyTasksPage() {
@@ -121,39 +123,71 @@ export default function MyTasksPage() {
                                             <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Task ID: {task.taskId}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {/* Permanent Overdue Badge (Red) */}
-                                            {task.deadline && new Date() > new Date(task.deadline) && task.status !== "Completed" && (
-                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                                    Overdue
-                                                </span>
-                                            )}
+                                            {/* Overdue Badge */}
+                                            {(() => {
+                                                const isOverdue = task.deadline && (
+                                                    (task.status === "Completed" || task.status === "Submitted")
+                                                        ? (task.submittedAt && new Date(task.submittedAt) > new Date(task.deadline))
+                                                        : (new Date() > new Date(task.deadline))
+                                                );
+                                                return isOverdue ? (
+                                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                                        Overdue
+                                                    </span>
+                                                ) : null;
+                                            })()}
 
                                             {/* Dynamic Status Badge */}
                                             {task.status === "Submitted" ? (
-                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                                                     Submitted
                                                 </span>
                                             ) : (task.isInProgress || task.status === "In Progress") ? (
                                                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse">
                                                     In Progress
                                                 </span>
-                                            ) : (task.status === "Pending" || task.status === "Created") && (!task.deadline || new Date() <= new Date(task.deadline)) ? (
-                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                                            ) : (task.status === "Pending" || task.status === "Created") ? (
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">
                                                     {task.status === "Created" ? "Created" : "Pending"}
                                                 </span>
                                             ) : task.status === "Completed" ? (
                                                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                                     Completed
                                                 </span>
+                                            ) : task.status === "Rejected" ? (
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                                    Rejected
+                                                </span>
                                             ) : null}
                                         </div>
                                     </div>
                                     <p className="text-slate-300 leading-relaxed">{task.description}</p>
+                                    
+                                    {task.status === "Rejected" && task.rejectionReason && (
+                                        <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex gap-4 items-start animate-in slide-in-from-left-4 duration-500">
+                                            <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0 border border-rose-500/20">
+                                                <AlertCircle className="text-rose-400" size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="text-rose-400 text-xs font-bold uppercase tracking-widest mb-1">Rejection Reason</p>
+                                                <p className="text-slate-300 text-sm italic font-medium">"{task.rejectionReason}"</p>
+                                                <p className="text-slate-500 text-[10px] mt-2 font-bold uppercase tracking-tighter">Please address these issues and resubmit the task.</p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex flex-wrap gap-4 pt-2">
                                         <div className="flex items-center gap-2 text-slate-400 text-sm">
                                             <Clock size={16} />
                                             <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
                                         </div>
+                                       
+                                        {task.taskStarted && (
+                                            <div className="flex items-center gap-2 text-slate-400 text-sm">
+                                                <Clock size={16} />
+                                                <span>Started: {new Date(task.taskStarted).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
                                         {task.deadline && (
                                             <div className={`flex items-center gap-2 text-sm ${new Date() > new Date(task.deadline) && task.status !== "Completed" && task.status !== "Submitted" ? "text-red-400 animate-pulse" : "text-orange-400"}`}>
                                                 <Clock size={16} />
@@ -200,7 +234,7 @@ export default function MyTasksPage() {
                                         </button>
                                     ) : (
                                         <div className="flex flex-col gap-2">
-                                            {(task.status === "Pending" || task.status === "Created" || task.status === "Overdue") && (
+                                            {(task.status === "Pending" || task.status === "Created" || task.status === "Overdue" || task.status === "Rejected") && (
                                                 <button
                                                     onClick={() => handleSetInProgress(task._id)}
                                                     className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold rounded-xl transition-all flex items-center justify-center gap-2"

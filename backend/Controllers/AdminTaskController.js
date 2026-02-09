@@ -116,9 +116,16 @@ export const getTaskSubmissions = async (req, res) => {
 export const approveSubmission = async (req, res) => {
     try {
         const submission = await TaskSubmission.findById(req.params.submissionId);
+        if (!submission) {
+            return res.status(404).json({ success: false, message: "Submission not found" });
+        }
+
+        // Update submission status to Approved
+        submission.status = "Approved";
+        await submission.save();
 
         // Update task status to Completed
-        await Task.findByIdAndUpdate(submission.task, { status: "Completed" });
+        await Task.findByIdAndUpdate(submission.task, { status: "Completed", rejectionReason: null });
 
         res.status(200).json({ success: true, message: "Submission approved and task completed" });
     } catch (error) {
@@ -129,10 +136,23 @@ export const approveSubmission = async (req, res) => {
 // Reject submission and update task status
 export const rejectSubmission = async (req, res) => {
     try {
+        const { rejectionReason } = req.body;
         const submission = await TaskSubmission.findById(req.params.submissionId);
+        if (!submission) {
+            return res.status(404).json({ success: false, message: "Submission not found" });
+        }
 
-        // Update task status to Submitted (allowing resubmission or correction)
-        await Task.findByIdAndUpdate(submission.task, { status: "Pending", isInProgress: false });
+        // Update submission status to Rejected
+        submission.status = "Rejected";
+        submission.rejectionReason = rejectionReason;
+        await submission.save();
+
+        // Update task status to Rejected (allowing resubmission or correction)
+        await Task.findByIdAndUpdate(submission.task, { 
+            status: "Rejected", 
+            isInProgress: false,
+            rejectionReason: rejectionReason 
+        });
 
         res.status(200).json({ success: true, message: "Submission rejected" });
     } catch (error) {
