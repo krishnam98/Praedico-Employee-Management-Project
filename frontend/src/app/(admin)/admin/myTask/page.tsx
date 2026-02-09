@@ -133,7 +133,7 @@ export default function MyTasksPage() {
                                                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                                     Submitted
                                                 </span>
-                                            ) : (task.isInProgress || task.status === "Work In Progress") ? (
+                                            ) : (task.isInProgress || task.status === "In Progress") ? (
                                                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse">
                                                     In Progress
                                                 </span>
@@ -200,7 +200,7 @@ export default function MyTasksPage() {
                                         </button>
                                     ) : (
                                         <div className="flex flex-col gap-2">
-                                            {(task.status === "Pending" || task.status === "Overdue") && (
+                                            {(task.status === "Pending" || task.status === "Created" || task.status === "Overdue") && (
                                                 <button
                                                     onClick={() => handleSetInProgress(task._id)}
                                                     className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold rounded-xl transition-all flex items-center justify-center gap-2"

@@ -133,11 +133,12 @@ export const updateTaskStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        if (task.status !== "Pending" && task.status !== "Overdue") {
+        if (task.status !== "Pending" && task.status !== "Overdue" && task.status !== "Created") {
             return res.status(400).json({ success: false, message: `Cannot change status from ${task.status}` });
         }
 
         task.isInProgress = true;
+        task.status = "In Progress";
         await task.save();
 
         res.status(200).json({ success: true, message: "Task marked as In Progress", data: task });

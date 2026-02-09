@@ -226,7 +226,7 @@ export default function TasksPage() {
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">In Progress</p>
-          <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "Work In Progress").length}</h3>
+          <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress").length}</h3>
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Completed</p>
@@ -264,7 +264,7 @@ export default function TasksPage() {
           <CustomSelect
             value={statusFilter}
             onChange={setStatusFilter}
-            options={["Created", "Pending", "Work In Progress", "Completed", "Overdue"]}
+            options={["Created", "Pending", "In Progress", "Completed", "Overdue"]}
             placeholder="All Status"
             icon={Filter}
           />
@@ -352,7 +352,7 @@ export default function TasksPage() {
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                             Submitted
                           </span>
-                        ) : (task.isInProgress || task.status === "Work In Progress") ? (
+                        ) : (task.isInProgress || task.status === "In Progress") ? (
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap animate-pulse">
                             In Progress
                           </span>
@@ -360,9 +360,9 @@ export default function TasksPage() {
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                             Completed
                           </span>
-                        ) : (task.status === "Pending" && (!task.deadline || new Date() <= new Date(task.deadline))) ? (
+                        ) : (task.status === "Pending" || task.status === "Created") && (!task.deadline || new Date() <= new Date(task.deadline)) ? (
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-700/50 text-slate-400 border border-slate-600 whitespace-nowrap">
-                            Pending
+                            {task.status === "Created" ? "Created" : "Pending"}
                           </span>
                         ) : null}
                       </div>
