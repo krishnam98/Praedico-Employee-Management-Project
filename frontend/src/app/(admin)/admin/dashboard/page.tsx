@@ -17,7 +17,7 @@ export default function AdminDashboard() {
   const [stats] = useState({
     totalUsers: "1,248",
     activeUsers: "482",
-    pendingTasks: "24",
+    createdTasks: "24",
     totalIncome: "$42.5K"
   });
 
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
       try {
         const token = localStorage.getItem("admin_token");
         if (!token) {
-          router.push("/admin/auth/signIn");
+          router.push("/");
           return;
         }
 
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
         }
       } catch (e) {
         console.error("Failed to fetch admin profile", e);
-        router.push("/admin/auth/signIn");
+        router.push("/");
       }
     };
 
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
                   icon={Activity} color="text-purple-400" bg="bg-purple-500/10" border="group-hover:border-purple-500/50"
                 />
                 <DarkMetricCard
-                  title="Pending Tasks" value={stats.pendingTasks} sub="Requires attention"
+                  title="Created Tasks" value={stats.createdTasks} sub="Requires attention"
                   icon={Clock} color="text-orange-400" bg="bg-orange-500/10" border="group-hover:border-orange-500/50"
                 />
               </div>

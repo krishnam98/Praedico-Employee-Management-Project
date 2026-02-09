@@ -231,8 +231,8 @@ export default function TasksPage() {
           <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Pending</p>
-          <h3 className="text-3xl font-black text-slate-400">{tasks.filter(t => t.status === "Pending").length}</h3>
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Created</p>
+          <h3 className="text-3xl font-black text-slate-400">{tasks.filter(t => t.status === "Created").length}</h3>
         </div>
       </div>
 
@@ -262,7 +262,7 @@ export default function TasksPage() {
            <CustomSelect
                 value={statusFilter}
                 onChange={setStatusFilter}
-                options={["Pending", "Work In Progress", "Completed", "Overdue"]}
+                options={["Created", "Work In Progress", "Completed", "Overdue"]}
                 placeholder="All Status"
                 icon={Filter}
              />

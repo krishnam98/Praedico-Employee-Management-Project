@@ -7,7 +7,7 @@ export default function AdminRedirect() {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace("/admin/auth/signin");
+        router.replace("/");
     }, [router]);
 
     return (

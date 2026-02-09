@@ -29,7 +29,7 @@ export default function ViewTaskDetailsModal({
     "Completed": "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
     "Work In Progress": "text-amber-400 bg-amber-500/10 border-amber-500/20",
     "Overdue": "text-rose-400 bg-rose-500/10 border-rose-500/20",
-    "Pending": "text-slate-400 bg-slate-700/50 border-slate-600",
+    "Created": "text-slate-400 bg-slate-700/50 border-slate-600",
     "default": "text-slate-400 bg-slate-700/50 border-slate-600"
   };
 

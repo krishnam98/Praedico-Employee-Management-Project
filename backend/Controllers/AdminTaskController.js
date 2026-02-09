@@ -29,7 +29,7 @@ export const createTask = async (req, res) => {
         const task = await Task.create({
             title,
             description,
-            status: "Pending",
+            status: "Created",
             assignedTo,
             assignedBy: req.user._id,
             taskId,

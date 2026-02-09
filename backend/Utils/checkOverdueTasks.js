@@ -12,7 +12,7 @@ export const checkAndUpdateOverdueTasks = async () => {
         const result = await Task.updateMany(
             {
                 deadline: { $lt: now },
-                status: "Pending"
+                status: "Created"
             },
             {
                 $set: { status: "Overdue" }

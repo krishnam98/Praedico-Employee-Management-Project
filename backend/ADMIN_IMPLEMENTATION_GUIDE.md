@@ -74,7 +74,7 @@ export const createTask = async (req, res) => {
         const task = await Task.create({
             title,
             description,
-            status: "Pending",
+            status: "Created",
             assignedTo,
             assignedBy: req.user._id,
             taskId,
@@ -187,7 +187,7 @@ export const approveSubmission = async (req, res) => {
 
 **D. Task Detail/Edit Modal**
 - View task details
-- Update status (Pending → Work In Progress → Completed)
+- Update status (Created → Work In Progress → Completed)
 - Update deadline
 - Call `PUT /api/admin/tasks/:taskId`
 
@@ -213,7 +213,7 @@ export const approveSubmission = async (req, res) => {
   _id: ObjectId,
   title: String,
   description: String,
-  status: "Pending" | "Work In Progress" | "Completed" | "Overdue",
+  status: "Created" | "Work In Progress" | "Completed" | "Overdue",
   assignedTo: ObjectId (User),  // Employee's User ID
   assignedBy: ObjectId (User),  // Admin's User ID
   taskId: String,               // e.g., "TSK-1001"
@@ -289,7 +289,7 @@ Headers: { Authorization: "Bearer <admin-token>" }
 ┌────────────────────────────────────────────────────────────┐
 │  Task ID  │  Title        │  Assigned To  │  Status  │ ... │
 ├────────────────────────────────────────────────────────────┤
-│  TSK-1001 │  Monthly Rpt  │  aniket       │  Pending │ ... │
+│  TSK-1001 │  Monthly Rpt  │  aniket       │  Created │ ... │
 │  TSK-1002 │  Update Docs  │  john         │  WIP     │ ... │
 └────────────────────────────────────────────────────────────┘
 ```

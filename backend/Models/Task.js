@@ -5,8 +5,8 @@ const taskSchema = new mongoose.Schema({
   description: { type: String, required: true },
   status: {
     type: String,
-    enum: ["Pending", "Submitted", "Completed", "Overdue", "Rejected"],
-    default: "Pending"
+    enum: ["Created", "Submitted", "Completed", "Overdue", "Rejected"],
+    default: "Created"
   },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Employee ID
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Admin ID

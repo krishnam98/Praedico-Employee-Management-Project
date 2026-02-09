@@ -45,7 +45,7 @@ const seedTasks = async () => {
             {
                 title: "Register New Employees",
                 description: "Complete the registration for the 5 new hires in the engineering department.",
-                status: "Pending",
+                status: "Created",
                 assignedTo: employee._id,
                 assignedBy: admin._id,
                 taskId: "TSK-1001",

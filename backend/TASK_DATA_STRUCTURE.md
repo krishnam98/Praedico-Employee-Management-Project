@@ -13,7 +13,7 @@ When an admin assigns a task to an employee, it creates a document in the `tasks
   _id: ObjectId("67a47d0a908664440da47d0a"),  // MongoDB auto-generated ID
   title: "Register New Employees",
   description: "Complete the registration for the 5 new hires in the engineering department.",
-  status: "Pending",  // Can be: "Pending", "Work In Progress", "Completed", "Overdue"
+  status: "Created",  // Can be: "Created", "Work In Progress", "Completed", "Overdue"
   assignedTo: ObjectId("67a46ed06efc6dec46ed9608"),  // Employee's User ID
   assignedBy: ObjectId("67a3510c750115e3510c7501"),  // Admin's User ID
   taskId: "TSK-1001",  // Unique task identifier

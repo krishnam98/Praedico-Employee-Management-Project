@@ -86,7 +86,7 @@ export default function MyTasksPage() {
                                             <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{task.title}</h3>
                                             <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Task ID: {task.taskId}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${task.status === "Pending" ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${task.status === "Created" ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
                                                 task.status === "Work In Progress" ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" :
                                                     task.status === "Submitted" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                                                         task.status === "Completed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
