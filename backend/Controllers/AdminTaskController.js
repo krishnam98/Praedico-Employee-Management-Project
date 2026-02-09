@@ -8,7 +8,7 @@ import { checkAndUpdateOverdueTasks } from "../Utils/checkOverdueTasks.js";
 export const createTask = async (req, res) => {
     try {
         const { title, description, assignedTo, deadline } = req.body;
-        
+
         let attachmentUrl = "";
         if (req.file) {
             // Construct the full URL for the uploaded file
@@ -131,9 +131,8 @@ export const rejectSubmission = async (req, res) => {
     try {
         const submission = await TaskSubmission.findById(req.params.submissionId);
 
-        // Update task status to Rejected (or Pending to allow resubmission)
-        // User requested "Accept and Reject". "Rejected" is now an enum.
-        await Task.findByIdAndUpdate(submission.task, { status: "Rejected" });
+        // Update task status to Submitted (allowing resubmission or correction)
+        await Task.findByIdAndUpdate(submission.task, { status: "Pending", isInProgress: false });
 
         res.status(200).json({ success: true, message: "Submission rejected" });
     } catch (error) {

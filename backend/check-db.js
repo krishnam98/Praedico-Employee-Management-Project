@@ -23,16 +23,11 @@ const checkDb = async () => {
         }
 
         const users = await User.find({});
-        console.log(`Total Users in DB: ${users.length}`);
-        users.forEach(u => {
-            console.log(`User: ${u.name} | Role: ${u.role} | ID: ${u._id}`);
-        });
-
-        const tasks = await Task.find({});
-        console.log(`Total Tasks in DB: ${tasks.length}`);
-        tasks.forEach(t => {
-            console.log(`Task: ${t.title} | AssignedTo: ${t.assignedTo} | Status: ${t.status}`);
-        });
+        console.log("--- USERS START ---");
+        for (const u of users) {
+            console.log(`U|${u.email}|${u.role}|${u.name}`);
+        }
+        console.log("--- USERS END ---");
 
         await mongoose.disconnect();
         console.log("Disconnected from MongoDB");

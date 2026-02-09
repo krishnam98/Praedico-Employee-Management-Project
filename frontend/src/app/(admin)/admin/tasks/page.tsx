@@ -105,6 +105,8 @@ interface Task {
   };
   deadline: string;
   createdAt: string;
+  submittedAt?: string;
+  isInProgress?: boolean;
 }
 
 export default function TasksPage() {
@@ -113,14 +115,14 @@ export default function TasksPage() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  
+
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isSubmissionsModalOpen, setIsSubmissionsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const fetchTasks = async () => {
@@ -159,7 +161,7 @@ export default function TasksPage() {
     setSelectedTask(task);
     setIsViewModalOpen(true);
   };
-   
+
   const handleDelete = async (taskId: string) => {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
@@ -251,21 +253,21 @@ export default function TasksPage() {
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-             <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 transition-all">
-               <FileText className="h-5 w-5" />
-               Export
-             </button>
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 transition-all">
+              <FileText className="h-5 w-5" />
+              Export
+            </button>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           <CustomSelect
-                value={statusFilter}
-                onChange={setStatusFilter}
-                options={["Created", "Work In Progress", "Completed", "Overdue"]}
-                placeholder="All Status"
-                icon={Filter}
-             />
+          <CustomSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={["Created", "Pending", "Work In Progress", "Completed", "Overdue"]}
+            placeholder="All Status"
+            icon={Filter}
+          />
         </div>
       </div>
 
@@ -277,10 +279,10 @@ export default function TasksPage() {
             <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Loading Tasks...</p>
           </div>
         ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-              <AlertCircle className="h-12 w-12 text-rose-500 mb-4" />
-              <p className="text-white font-bold">{error}</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+            <AlertCircle className="h-12 w-12 text-rose-500 mb-4" />
+            <p className="text-white font-bold">{error}</p>
+          </div>
         ) : filteredTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="h-20 w-20 bg-slate-700/30 rounded-full flex items-center justify-center mb-6">
@@ -305,52 +307,71 @@ export default function TasksPage() {
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {filteredTasks.map((task) => (
-                  <tr 
-                    key={task._id} 
+                  <tr
+                    key={task._id}
                     onClick={() => handleViewTask(task)}
                     className="hover:bg-white/5 transition-colors group cursor-pointer"
                   >
                     <td className="py-6 px-6">
-                        <code className="text-xs bg-indigo-500/10 px-3 py-1.5 rounded-lg text-indigo-400 font-bold border border-indigo-500/20">
-                            {task.taskId}
-                        </code>
+                      <code className="text-xs bg-indigo-500/10 px-3 py-1.5 rounded-lg text-indigo-400 font-bold border border-indigo-500/20">
+                        {task.taskId}
+                      </code>
                     </td>
                     <td className="py-6 px-6">
-                        <p className="text-white font-bold text-sm">{task.title}</p>
+                      <p className="text-white font-bold text-sm">{task.title}</p>
                     </td>
                     <td className="py-6 px-6">
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg ring-2 ring-white/5 group-hover:scale-110 transition-transform shrink-0">
-                                {task.assignedTo?.name ? task.assignedTo.name.charAt(0).toUpperCase() : "?"}
-                            </div>
-                            <div className="min-w-[150px]">
-                                <p className="text-white font-bold text-sm leading-none mb-1 group-hover:text-indigo-400 transition-colors truncate">
-                                    {task.assignedTo?.name || "Unassigned"}
-                                </p>
-                                <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-medium truncate">
-                                    <span className="text-xs">{task.assignedTo?.email}</span>
-                                </div>
-                            </div>
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg ring-2 ring-white/5 group-hover:scale-110 transition-transform shrink-0">
+                          {task.assignedTo?.name ? task.assignedTo.name.charAt(0).toUpperCase() : "?"}
                         </div>
-                    </td>
-                    <td className="py-6 px-6">
-                        <span className="text-slate-300 font-bold text-sm">{task.assignedBy?.name || "Admin"}</span>
-                    </td>
-                    <td className="py-6 px-6">
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${
-                            task.status === "Completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                            task.status === "Work In Progress" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                            task.status === "Overdue" ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                            "bg-slate-700/50 text-slate-400 border-slate-600"
-                        }`}>
-                            {task.status}
-                        </span>
-                    </td>
-                    <td className="py-6 px-6">
-                        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                            <Clock className="h-3.5 w-3.5" />
-                            {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}
+                        <div className="min-w-[150px]">
+                          <p className="text-white font-bold text-sm leading-none mb-1 group-hover:text-indigo-400 transition-colors truncate">
+                            {task.assignedTo?.name || "Unassigned"}
+                          </p>
+                          <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-medium truncate">
+                            <span className="text-xs">{task.assignedTo?.email}</span>
+                          </div>
                         </div>
+                      </div>
+                    </td>
+                    <td className="py-6 px-6">
+                      <span className="text-slate-300 font-bold text-sm">{task.assignedBy?.name || "Admin"}</span>
+                    </td>
+                    <td className="py-6 px-6">
+                      <div className="flex items-center gap-2">
+                        {/* Permanent Overdue Badge (Red) */}
+                        {task.deadline && new Date() > new Date(task.deadline) && task.status !== "Completed" && (
+                          <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap shadow-[0_0_10px_rgba(244,63,94,0.15)]">
+                            Overdue
+                          </span>
+                        )}
+
+                        {/* Dynamic Status Badge (Case-based) */}
+                        {task.status === "Submitted" ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                            Submitted
+                          </span>
+                        ) : (task.isInProgress || task.status === "Work In Progress") ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap animate-pulse">
+                            In Progress
+                          </span>
+                        ) : task.status === "Completed" ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                            Completed
+                          </span>
+                        ) : (task.status === "Pending" && (!task.deadline || new Date() <= new Date(task.deadline))) ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-700/50 text-slate-400 border border-slate-600 whitespace-nowrap">
+                            Pending
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="py-6 px-6">
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                        <Clock className="h-3.5 w-3.5" />
+                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}
+                      </div>
                     </td>
                     <td className="py-6 px-6 text-right">
                       <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
@@ -360,32 +381,32 @@ export default function TasksPage() {
                         >
                           <MoreVertical className="h-5 w-5" />
                         </button>
-                        
+
                         {activeMenu === task._id && (
                           <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                             <div className="p-2 space-y-1">
-                                <button
-                                    onClick={() => handleEdit(task)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-indigo-400 hover:bg-indigo-500/10 transition-all"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                    Edit Task
-                                </button>
-                                <button
-                                    onClick={() => handleViewSubmissions(task)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700/50 transition-all"
-                                >
-                                    <FileText className="h-4 w-4" />
-                                    View Submissions
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(task._id)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10 transition-all"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    Delete Task
-                                </button>
-                             </div>
+                            <div className="p-2 space-y-1">
+                              <button
+                                onClick={() => handleEdit(task)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit Task
+                              </button>
+                              <button
+                                onClick={() => handleViewSubmissions(task)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700/50 transition-all"
+                              >
+                                <FileText className="h-4 w-4" />
+                                View Submissions
+                              </button>
+                              <button
+                                onClick={() => handleDelete(task._id)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10 transition-all"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete Task
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -407,8 +428,8 @@ export default function TasksPage() {
       <UpdateTaskModal
         isOpen={isUpdateModalOpen}
         onClose={() => {
-            setIsUpdateModalOpen(false);
-            setSelectedTask(null);
+          setIsUpdateModalOpen(false);
+          setSelectedTask(null);
         }}
         onSuccess={fetchTasks}
         task={selectedTask}
@@ -417,8 +438,8 @@ export default function TasksPage() {
       <ViewSubmissionsModal
         isOpen={isSubmissionsModalOpen}
         onClose={() => {
-            setIsSubmissionsModalOpen(false);
-            setSelectedTask(null);
+          setIsSubmissionsModalOpen(false);
+          setSelectedTask(null);
         }}
         taskId={selectedTask?._id || null}
         taskTitle={selectedTask?.title || ""}
@@ -427,8 +448,8 @@ export default function TasksPage() {
       <ViewTaskDetailsModal
         isOpen={isViewModalOpen}
         onClose={() => {
-            setIsViewModalOpen(false);
-            setSelectedTask(null);
+          setIsViewModalOpen(false);
+          setSelectedTask(null);
         }}
         task={selectedTask}
       />

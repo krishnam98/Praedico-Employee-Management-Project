@@ -24,7 +24,8 @@ export const submitTask = async (req, res) => {
 
         // If a file was uploaded, use its path
         if (req.file) {
-            finalAttachment = req.file.path.replace(/\\/g, "/"); // Normalize path separators
+            const fileName = req.file.filename;
+            finalAttachment = `uploads/${fileName}`;
         }
 
         // Generate submittedId
@@ -47,6 +48,7 @@ export const submitTask = async (req, res) => {
         // Update task status to "Submitted" and record submission date
         await Task.findByIdAndUpdate(taskId, {
             status: "Submitted",
+            isInProgress: false,
             submittedAt: new Date()
         });
 
@@ -97,14 +99,6 @@ export const updateSubmission = async (req, res) => {
             });
         }
 
-        // Check if deadline has passed
-        if (task.deadline && new Date() > new Date(task.deadline)) {
-            return res.status(400).json({
-                success: false,
-                message: "Cannot edit - deadline has passed"
-            });
-        }
-
         // Update the submission
         submission.title = title;
         submission.description = description;
@@ -118,6 +112,35 @@ export const updateSubmission = async (req, res) => {
         await submission.save();
 
         res.status(200).json({ success: true, data: submission });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Update task status (for employee to set In Progress)
+export const updateTaskStatus = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { status } = req.body;
+
+        if (!status || status !== "In Progress") {
+            return res.status(400).json({ success: false, message: "Only 'In Progress' status can be set by employees" });
+        }
+
+        const task = await Task.findOne({ _id: taskId, assignedTo: req.user._id });
+
+        if (!task) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+        }
+
+        if (task.status !== "Pending" && task.status !== "Overdue") {
+            return res.status(400).json({ success: false, message: `Cannot change status from ${task.status}` });
+        }
+
+        task.isInProgress = true;
+        await task.save();
+
+        res.status(200).json({ success: true, message: "Task marked as In Progress", data: task });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

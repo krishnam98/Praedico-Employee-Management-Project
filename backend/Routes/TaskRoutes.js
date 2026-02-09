@@ -1,5 +1,5 @@
 import express from "express";
-import { getMyTasks, submitTask, getTaskSubmission, updateSubmission } from "../Controllers/TaskController.js";
+import { getMyTasks, submitTask, getTaskSubmission, updateSubmission, updateTaskStatus } from "../Controllers/TaskController.js";
 import { protect } from "../Middlewares/AuthMiddleware.js";
 import { authorizeRoles } from "../Middlewares/RoleMiddleware.js";
 import upload from "../Middlewares/UploadMiddleware.js";
@@ -13,5 +13,6 @@ router.get("/my-tasks", authorizeRoles("EMPLOYEE", "ADMIN"), getMyTasks);
 router.post("/submit", authorizeRoles("EMPLOYEE", "ADMIN"), upload.single("attachment"), submitTask);
 router.get("/submissions/:taskId", authorizeRoles("EMPLOYEE", "ADMIN"), getTaskSubmission);
 router.put("/submissions/:submissionId", authorizeRoles("EMPLOYEE", "ADMIN"), upload.single("attachment"), updateSubmission);
+router.patch("/status/:taskId", authorizeRoles("EMPLOYEE", "ADMIN"), updateTaskStatus);
 
 export default router;

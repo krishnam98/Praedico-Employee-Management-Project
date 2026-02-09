@@ -22,6 +22,9 @@ interface Submission {
   attachment?: string;
   submittedId: string;
   createdAt: string;
+  task?: {
+    deadline?: string;
+  };
 }
 
 export default function ViewSubmissionsModal({
@@ -168,6 +171,11 @@ export default function ViewSubmissionsModal({
                         <span className="text-indigo-400 font-semibold">{sub.employee.name}</span>
                         <span>•</span>
                         <span>{new Date(sub.createdAt).toLocaleDateString()}</span>
+                        {sub.createdAt && sub.task?.deadline && new Date(sub.createdAt) > new Date(sub.task.deadline) && (
+                          <span className="ml-2 px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 text-[10px] font-bold border border-red-500/20 uppercase tracking-wider">
+                            Overdue Submission
+                          </span>
+                        )}
                       </div>
                       <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
                         {sub.description}
@@ -177,10 +185,10 @@ export default function ViewSubmissionsModal({
                           href={sub.attachment.startsWith("http") ? sub.attachment : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${sub.attachment}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 mt-2"
+                          className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 mt-3 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/20 transition-all hover:bg-emerald-400/20"
                         >
-                          <Download className="h-3 w-3" />
-                          {sub.attachment.startsWith("uploads/") ? "Download Attachment" : "View Attachment"}
+                          <Download className="h-3.5 w-3.5" />
+                          {sub.attachment.includes("uploads/") ? "View/Download Document" : "Open Link"}
                         </a>
                       )}
                     </div>

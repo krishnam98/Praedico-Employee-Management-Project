@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
   description: { type: String, required: true },
   status: {
     type: String,
-    enum: ["Created", "Submitted", "Completed", "Overdue", "Rejected"],
+    enum: ["Created", "Pending", "In Progress", "Submitted", "Completed", "Overdue", "Rejected"],
     default: "Created"
   },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Employee ID
@@ -13,6 +13,7 @@ const taskSchema = new mongoose.Schema({
   taskId: { type: String, required: true, unique: true },
   deadline: { type: Date },
   attachment: { type: String }, // URL or file path for task attachment
+  isInProgress: { type: Boolean, default: false }, // Tracks if employee is currently working
   marks: { type: Number, default: 0 }, // Marks/score for the task
   submittedAt: { type: Date } // Date when employee submitted the task
 }, { timestamps: true });
