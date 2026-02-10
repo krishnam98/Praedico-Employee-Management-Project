@@ -57,7 +57,7 @@ export default function MyTasksPage() {
         setIsModalOpen(true);
     };
 
-    const handleSetInProgress = async (taskId: string) => {
+    const handleUpdateStatus = async (taskId: string, status: string) => {
         try {
             const token = localStorage.getItem("admin_token");
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/tasks/status/${taskId}`, {
@@ -66,7 +66,7 @@ export default function MyTasksPage() {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ status: "In Progress" })
+                body: JSON.stringify({ status })
             });
 
             const data = await response.json();
@@ -94,6 +94,30 @@ export default function MyTasksPage() {
             <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-800 to-slate-900 p-10 border border-slate-700 shadow-2xl">
                 <h1 className="text-4xl font-extrabold text-white tracking-tight">My Tasks</h1>
                 <p className="text-slate-400 mt-2 text-lg">Manage and submit your daily reports</p>
+            </div>
+
+            {/* Stats Quick View */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Total Tasks</p>
+                    <h3 className="text-3xl font-black text-white">{tasks.length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">In Progress</p>
+                    <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress" || t.isInProgress).length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Completed</p>
+                    <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Submitted</p>
+                    <h3 className="text-3xl font-black text-blue-400">{tasks.filter(t => t.status === "Submitted").length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Pending</p>
+                    <h3 className="text-3xl font-black text-slate-400">{tasks.filter(t => t.status === "Pending" || t.status === "Created" || t.status === "Rejected").length}</h3>
+                </div>
             </div>
 
             {error && (
@@ -162,7 +186,7 @@ export default function MyTasksPage() {
                                         </div>
                                     </div>
                                     <p className="text-slate-300 leading-relaxed">{task.description}</p>
-                                    
+
                                     {task.status === "Rejected" && task.rejectionReason && (
                                         <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex gap-4 items-start animate-in slide-in-from-left-4 duration-500">
                                             <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0 border border-rose-500/20">
@@ -181,7 +205,7 @@ export default function MyTasksPage() {
                                             <Clock size={16} />
                                             <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
                                         </div>
-                                       
+
                                         {task.taskStarted && (
                                             <div className="flex items-center gap-2 text-slate-400 text-sm">
                                                 <Clock size={16} />
@@ -201,9 +225,22 @@ export default function MyTasksPage() {
                                             </div>
                                         )}
                                         {task.attachment && (
-                                            <div className="flex items-center gap-2 pt-2">
+                                            <div className="flex flex-col gap-1 pt-2">
                                                 <a
-                                                    href={task.attachment.startsWith("http") ? task.attachment : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${task.attachment}`}
+                                                    href={
+                                                        (() => {
+                                                            const url = task.attachment.startsWith("http")
+                                                                ? task.attachment
+                                                                : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${task.attachment}`;
+
+                                                            // Use Google Docs Viewer for all documents (including PDFs) to ensure compatibility
+                                                            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                                            if (!isImage) {
+                                                                return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                                                            }
+                                                            return url;
+                                                        })()
+                                                    }
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-3 py-2 rounded-lg border border-indigo-500/20 transition-all hover:bg-indigo-500/20"
@@ -211,6 +248,9 @@ export default function MyTasksPage() {
                                                     <Paperclip size={14} />
                                                     View Task Attachment
                                                 </a>
+                                                <p className="text-[9px] text-slate-500 italic ml-1">
+                                                    Documents open in Viewer. Images open directly.
+                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -236,20 +276,32 @@ export default function MyTasksPage() {
                                         <div className="flex flex-col gap-2">
                                             {(task.status === "Pending" || task.status === "Created" || task.status === "Overdue" || task.status === "Rejected") && (
                                                 <button
-                                                    onClick={() => handleSetInProgress(task._id)}
+                                                    onClick={() => handleUpdateStatus(task._id, "In Progress")}
                                                     className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                                                 >
                                                     <Clock size={18} />
                                                     Set In Progress
                                                 </button>
                                             )}
-                                            <button
-                                                onClick={() => handleOpenModal(task)}
-                                                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
-                                            >
-                                                <Send size={18} />
-                                                {new Date() > new Date(task.deadline || "") ? "Submit Overdue" : "Submit Task"}
-                                            </button>
+
+                                            {(task.status === "In Progress" || task.isInProgress) && (
+                                                <div className="flex flex-col gap-2">
+                                                    <button
+                                                        onClick={() => handleOpenModal(task)}
+                                                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
+                                                    >
+                                                        <FileText size={18} />
+                                                        {task.submittedAt ? "Edit Submission" : (new Date() > new Date(task.deadline || "") ? "Submit Overdue" : "Submit Task")}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(task._id, "Submitted")}
+                                                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                                                    >
+                                                        <Send size={18} />
+                                                        Mark as Submitted
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

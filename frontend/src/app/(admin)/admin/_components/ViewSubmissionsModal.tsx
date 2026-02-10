@@ -197,27 +197,44 @@ export default function ViewSubmissionsModal({
                         {sub.description}
                       </p>
                       {sub.attachment && (
-                        <a
-                          href={sub.attachment.startsWith("http") ? sub.attachment : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${sub.attachment}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 mt-3 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/20 transition-all hover:bg-emerald-400/20"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          {sub.attachment.includes("uploads/") ? "View/Download Document" : "Open Link"}
-                        </a>
+                        <div className="flex flex-col gap-1 mt-3">
+                          <a
+                            href={
+                              (() => {
+                                const url = sub.attachment.startsWith("http")
+                                  ? sub.attachment
+                                  : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/${sub.attachment}`;
+
+                                // Use Google Docs Viewer for all documents (including PDFs) to ensure compatibility
+                                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                if (!isImage) {
+                                  return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                                }
+                                return url;
+                              })()
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/20 transition-all hover:bg-emerald-400/20"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {sub.attachment.includes("uploads/") ? "View/Open Document" : "Open Link"}
+                          </a>
+                          <p className="text-[9px] text-slate-500 italic ml-1">
+                            Documents open in Viewer. Images open directly.
+                          </p>
+                        </div>
                       )}
                     </div>
 
                     <div className="flex flex-col items-end gap-3">
                       {sub.status && (
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          sub.status === "Approved" 
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                            : sub.status === "Rejected"
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${sub.status === "Approved"
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : sub.status === "Rejected"
                             ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
                             : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                        }`}>
+                          }`}>
                           {sub.status}
                         </span>
                       )}
@@ -272,7 +289,7 @@ export default function ViewSubmissionsModal({
             <p className="text-slate-400 text-sm mb-6">
               Please provide a reason for rejecting this submission. This will be shown to the employee.
             </p>
-            
+
             <div className="space-y-4">
               <textarea
                 value={rejectionReason}
@@ -280,7 +297,7 @@ export default function ViewSubmissionsModal({
                 placeholder="e.g., File format incorrect, missing details..."
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 min-h-[120px] resize-none"
               />
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setRejectionModalOpen(false)}

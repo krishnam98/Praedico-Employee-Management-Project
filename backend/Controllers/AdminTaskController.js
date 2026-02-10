@@ -11,8 +11,8 @@ export const createTask = async (req, res) => {
 
         let attachmentUrl = "";
         if (req.file) {
-            // Construct the full URL for the uploaded file
-            attachmentUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+            // Use the Cloudinary secure URL
+            attachmentUrl = req.file.path;
         } else if (req.body.attachment) {
             // Fallback to URL string if passed in body (from previous implementation)
             attachmentUrl = req.body.attachment;
@@ -148,10 +148,10 @@ export const rejectSubmission = async (req, res) => {
         await submission.save();
 
         // Update task status to Rejected (allowing resubmission or correction)
-        await Task.findByIdAndUpdate(submission.task, { 
-            status: "Rejected", 
+        await Task.findByIdAndUpdate(submission.task, {
+            status: "Rejected",
             isInProgress: false,
-            rejectionReason: rejectionReason 
+            rejectionReason: rejectionReason
         });
 
         res.status(200).json({ success: true, message: "Submission rejected" });
