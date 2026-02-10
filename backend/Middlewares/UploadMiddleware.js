@@ -1,37 +1,33 @@
 import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-// Set up storage engine
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/"); // Upload files to the 'uploads' folder
-    },
-    filename: (req, file, cb) => {
-        // Create a unique filename with the original extension
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Set up Cloudinary storage engine
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        const fileExt = file.originalname.split('.').pop().toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt);
+
+        return {
+            folder: "praedico-uploads",
+            resource_type: isImage ? "image" : "raw",
+            public_id: file.originalname.split('.')[0].replace(/\s+/g, '_') + "-" + Date.now(),
+        };
     },
 });
 
-// File filter (optional, check for allowed types if needed)
-const fileFilter = (req, file, cb) => {
-    // Accept all files for now, or you can restrict like below:
-    // const allowedTypes = /jpeg|jpg|png|pdf|doc|docx/;
-    // const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    // const mimetype = allowedTypes.test(file.mimetype);
-    // if (extname && mimetype) {
-    //     return cb(null, true);
-    // } else {
-    //     cb("Error: File type not supported!");
-    // }
-    cb(null, true); 
-};
-
-// Initialize multer
+// Initialize multer with Cloudinary storage
 const upload = multer({
     storage: storage,
     limits: { fileSize: 1024 * 1024 * 10 }, // Limit file size to 10MB
-    fileFilter: fileFilter,
 });
 
 export default upload;

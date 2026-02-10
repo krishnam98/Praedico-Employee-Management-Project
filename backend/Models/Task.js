@@ -14,6 +14,8 @@ const taskSchema = new mongoose.Schema({
   deadline: { type: Date },
   attachment: { type: String }, // URL or file path for task attachment
   isInProgress: { type: Boolean, default: false }, // Tracks if employee is currently working
+  rejectionReason: { type: String }, // Reason why the task was rejected
+  taskStarted: { type: Date },
   marks: { type: Number, default: 0 }, // Marks/score for the task
   submittedAt: { type: Date } // Date when employee submitted the task
 }, { timestamps: true });

@@ -107,6 +107,8 @@ interface Task {
   createdAt: string;
   submittedAt?: string;
   isInProgress?: boolean;
+  taskStarted?: string;
+  rejectionReason?: string;
 }
 
 export default function TasksPage() {
@@ -189,9 +191,21 @@ export default function TasksPage() {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.taskId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.assignedTo?.name.toLowerCase().includes(searchQuery.toLowerCase());
+      (task.assignedTo?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    const isTaskOverdue = !!(task.deadline && (
+      (task.status === "Completed" || task.status === "Submitted")
+        ? (task.submittedAt && new Date(task.submittedAt) > new Date(task.deadline))
+        : (new Date() > new Date(task.deadline))
+    ));
+
+    const matchesStatus = statusFilter === "all" 
+      ? true 
+      : statusFilter === "Overdue" 
+        ? isTaskOverdue 
+        : statusFilter === "In Progress"
+          ? (task.status === "In Progress" || task.isInProgress)
+          : task.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -226,15 +240,15 @@ export default function TasksPage() {
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">In Progress</p>
-          <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress").length}</h3>
+          <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress" || t.isInProgress).length}</h3>
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Completed</p>
           <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
         </div>
         <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Created</p>
-          <h3 className="text-3xl font-black text-slate-400">{tasks.filter(t => t.status === "Created").length}</h3>
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Submitted</p>
+          <h3 className="text-3xl font-black text-blue-400">{tasks.filter(t => t.status === "Submitted").length}</h3>
         </div>
       </div>
 
@@ -264,7 +278,7 @@ export default function TasksPage() {
           <CustomSelect
             value={statusFilter}
             onChange={setStatusFilter}
-            options={["Created", "Pending", "In Progress", "Completed", "Overdue"]}
+            options={["Created", "Pending", "In Progress", "Submitted", "Completed", "Overdue", "Rejected"]}
             placeholder="All Status"
             icon={Filter}
           />
@@ -339,17 +353,24 @@ export default function TasksPage() {
                       <span className="text-slate-300 font-bold text-sm">{task.assignedBy?.name || "Admin"}</span>
                     </td>
                     <td className="py-6 px-6">
-                      <div className="flex items-center gap-2">
-                        {/* Permanent Overdue Badge (Red) */}
-                        {task.deadline && new Date() > new Date(task.deadline) && task.status !== "Completed" && (
-                          <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap shadow-[0_0_10px_rgba(244,63,94,0.15)]">
-                            Overdue
-                          </span>
-                        )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Overdue Badge - Shows for ANY status if criteria met */}
+                        {(() => {
+                          const isOverdue = task.deadline && (
+                            (task.status === "Completed" || task.status === "Submitted")
+                              ? (task.submittedAt && new Date(task.submittedAt) > new Date(task.deadline))
+                              : (new Date() > new Date(task.deadline))
+                          );
+                          return isOverdue ? (
+                            <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap shadow-[0_0_10px_rgba(244,63,94,0.15)]">
+                              Overdue
+                            </span>
+                          ) : null;
+                        })()}
 
-                        {/* Dynamic Status Badge (Case-based) */}
+                        {/* Primary Status Badges */}
                         {task.status === "Submitted" ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
                             Submitted
                           </span>
                         ) : (task.isInProgress || task.status === "In Progress") ? (
@@ -360,7 +381,11 @@ export default function TasksPage() {
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                             Completed
                           </span>
-                        ) : (task.status === "Pending" || task.status === "Created") && (!task.deadline || new Date() <= new Date(task.deadline)) ? (
+                        ) : task.status === "Rejected" ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap">
+                            Rejected
+                          </span>
+                        ) : (task.status === "Pending" || task.status === "Created") ? (
                           <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-700/50 text-slate-400 border border-slate-600 whitespace-nowrap">
                             {task.status === "Created" ? "Created" : "Pending"}
                           </span>
@@ -392,13 +417,15 @@ export default function TasksPage() {
                                 <Edit className="h-4 w-4" />
                                 Edit Task
                               </button>
-                              <button
-                                onClick={() => handleViewSubmissions(task)}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700/50 transition-all"
-                              >
-                                <FileText className="h-4 w-4" />
-                                View Submissions
-                              </button>
+                              {task.status !== "Created" && task.status !== "In Progress" && !task.isInProgress && (
+                                <button
+                                  onClick={() => handleViewSubmissions(task)}
+                                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700/50 transition-all"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  View Submissions
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleDelete(task._id)}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10 transition-all"

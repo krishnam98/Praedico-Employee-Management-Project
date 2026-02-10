@@ -19,6 +19,7 @@ const taskSubmissionSchema = new mongoose.Schema(
             default: "Submitted",
         },
         attachment: { type: String },
+        rejectionReason: { type: String },
         submittedId: { type: String, unique: true },
     },
     { timestamps: true }

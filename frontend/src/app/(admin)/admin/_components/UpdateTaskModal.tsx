@@ -335,9 +335,11 @@ export default function UpdateTaskModal({
                         className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
                       >
                          <option value="Created" className="bg-slate-900">Created</option>
-                         <option value="Work In Progress" className="bg-slate-900">Work In Progress</option>
+                         <option value="Pending" className="bg-slate-900">Pending</option>
+                         <option value="In Progress" className="bg-slate-900">In Progress</option>
+                         <option value="Submitted" className="bg-slate-900">Submitted</option>
                          <option value="Completed" className="bg-slate-900">Completed</option>
-                         <option value="Overdue" className="bg-slate-900">Overdue</option>
+                         <option value="Rejected" className="bg-slate-900">Rejected</option>
                       </select>
                     </div>
                   </div>
