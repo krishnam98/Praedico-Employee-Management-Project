@@ -12,7 +12,9 @@ import {
   Calendar,
   AlertCircle,
   Plus,
-  Edit
+  Edit,
+  ChevronDown,
+  LayoutDashboard
 } from "lucide-react";
 import axios from "axios";
 import CreateTaskModal from "../_components/CreateTaskModal";
@@ -98,7 +100,7 @@ interface Task {
     name: string;
     email: string;
     employeeId: string;
-  };
+  }[];
   assignedBy: {
     _id: string;
     name: string;
@@ -124,6 +126,7 @@ export default function TasksPage() {
   const [isSubmissionsModalOpen, setIsSubmissionsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showStats, setShowStats] = useState(false);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
@@ -191,7 +194,10 @@ export default function TasksPage() {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.taskId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (task.assignedTo?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (task.assignedTo || []).some(emp => 
+        (emp?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (emp?.employeeId || "").toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
     const isTaskOverdue = !!(task.deadline && (
       (task.status === "Completed" || task.status === "Submitted")
@@ -214,11 +220,20 @@ export default function TasksPage() {
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <CheckSquare className="h-10 w-10 text-indigo-500" />
-            Task Management
-          </h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
+              <CheckSquare className="h-10 w-10 text-indigo-500" />
+              Task Management
+            </h1>
+            <button
+               onClick={() => setShowStats(!showStats)}
+               className={`mt-1 p-2 rounded-xl transition-all border ${showStats ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/20' : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-700 hover:text-white'}`}
+               title={showStats ? "Hide Stats" : "Show Stats"}
+            >
+              <LayoutDashboard className={`h-5 w-5 transition-transform duration-300 ${showStats ? 'rotate-180 scale-110' : ''}`} />
+            </button>
+          </div>
           <p className="text-slate-400 mt-2 font-medium">
             Assign, track, and manage employee tasks
           </p>
@@ -232,43 +247,49 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {/* Stats Quick View */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Total Tasks</p>
-          <h3 className="text-3xl font-black text-white">{tasks.length}</h3>
+      {/* Stats Quick View - Collapsible */}
+      {showStats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 animate-in slide-in-from-top-4 duration-500">
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-indigo-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Total Tasks</p>
+            <h3 className="text-3xl font-black text-white">{tasks.length}</h3>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-amber-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">In Progress</p>
+            <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress" || t.isInProgress).length}</h3>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-emerald-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Completed</p>
+            <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-blue-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Submitted</p>
+            <h3 className="text-3xl font-black text-blue-400">{tasks.filter(t => t.status === "Submitted").length}</h3>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-rose-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Rejected</p>
+            <h3 className="text-3xl font-black text-rose-500">{tasks.filter(t => t.status === "Rejected").length}</h3>
+          </div>
         </div>
-        <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">In Progress</p>
-          <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress" || t.isInProgress).length}</h3>
-        </div>
-        <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Completed</p>
-          <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
-        </div>
-        <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Submitted</p>
-          <h3 className="text-3xl font-black text-blue-400">{tasks.filter(t => t.status === "Submitted").length}</h3>
-        </div>
-      </div>
+      )}
 
       {/* Search & Filter */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-800/20 p-4 rounded-3xl border border-slate-700/30">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative w-full max-w-md group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
             <input
               type="text"
               placeholder="Search by title, ID, or employee..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
+              className="w-full pl-12 pr-4 py-3 bg-slate-800/40 border border-slate-700/50 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium shadow-lg"
             />
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 transition-all">
-              <FileText className="h-5 w-5" />
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/40 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700/50 transition-all shadow-lg hover:-translate-y-0.5">
+              <FileText className="h-5 w-5 text-indigo-500" />
               Export
             </button>
           </div>
@@ -310,13 +331,13 @@ export default function TasksPage() {
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md shadow-sm">
                 <tr className="border-b border-slate-700/50">
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[200px]">Task ID</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[300px]">Title</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned To</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned By</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Status</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Deadline</th>
-                  <th className="py-5 px-6 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[150px]">Task ID</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap min-w-[250px]">Title</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned To</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned By</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Status</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Deadline</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
@@ -326,35 +347,76 @@ export default function TasksPage() {
                     onClick={() => handleViewTask(task)}
                     className="hover:bg-white/5 transition-colors group cursor-pointer"
                   >
-                    <td className="py-6 px-6">
-                      <code className="text-xs bg-indigo-500/10 px-3 py-1.5 rounded-lg text-indigo-400 font-bold border border-indigo-500/20">
+                    <td className="py-3 px-4">
+                      <code className="text-[11px] bg-indigo-500/10 px-2.5 py-1 rounded-lg text-indigo-400 font-bold border border-indigo-500/20">
                         {task.taskId}
                       </code>
                     </td>
-                    <td className="py-6 px-6">
+                    <td className="py-3 px-4">
                       <p className="text-white font-bold text-sm">{task.title}</p>
                     </td>
-                    <td className="py-6 px-6">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-lg ring-2 ring-white/5 group-hover:scale-110 transition-transform shrink-0">
-                          {task.assignedTo?.name ? task.assignedTo.name.charAt(0).toUpperCase() : "?"}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center">
+                        <div className="flex -space-x-3 overflow-hidden">
+                          {(task.assignedTo || []).slice(0, 3).map((emp, idx) => (
+                            <div 
+                              key={emp._id}
+                              className="relative group/avatar"
+                              title={`${emp.name} (${emp.employeeId})`}
+                            >
+                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-[10px] shadow-lg ring-2 ring-slate-900 group-hover/avatar:scale-110 group-hover/avatar:z-10 transition-all cursor-pointer">
+                                {emp.name?.charAt(0).toUpperCase() || "?"}
+                              </div>
+                            </div>
+                          ))}
+                          {(task.assignedTo || []).length > 3 && (
+                            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-900 flex items-center justify-center text-slate-400 font-bold text-[10px] ring-2 ring-slate-900">
+                              +{(task.assignedTo || []).length - 3}
+                            </div>
+                          )}
                         </div>
-                        <div className="min-w-[150px]">
-                          <p className="text-white font-bold text-sm leading-none mb-1 group-hover:text-indigo-400 transition-colors truncate">
-                            {task.assignedTo?.name || "Unassigned"}
-                          </p>
-                          <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-medium truncate">
-                            <span className="text-xs">{task.assignedTo?.email}</span>
+                        
+                        {(task.assignedTo || []).length > 0 ? (
+                          <div className="ml-3 group/list relative">
+                            <p className="text-white font-bold text-xs leading-none mb-0.5 group-hover/list:text-indigo-400 transition-colors truncate max-w-[120px]">
+                              {(task.assignedTo || [])[0].name}
+                              {(task.assignedTo || []).length > 1 && <span className="text-slate-500 ml-1">+{ (task.assignedTo || []).length - 1 }</span>}
+                            </p>
+                            <div className="flex items-center gap-1 text-slate-500 text-[10px] font-medium">
+                              <span>{(task.assignedTo || [])[0].employeeId}</span>
+                            </div>
+
+                            {/* Hover List for Multiple Employees */}
+                            {(task.assignedTo || []).length > 1 && (
+                              <div className="absolute left-0 top-full mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl opacity-0 invisible group-hover/list:opacity-100 group-hover/list:visible transition-all z-50 p-2 animate-in fade-in slide-in-from-top-2">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2 border-b border-slate-800/50 mb-1">Assigned Employees</p>
+                                <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                                  {(task.assignedTo || []).map(emp => (
+                                    <div key={emp._id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors">
+                                      <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                                        {emp.name.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-white font-bold text-xs truncate">{emp.name}</p>
+                                        <p className="text-slate-500 text-[10px] truncate">{emp.employeeId}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
+                        ) : (
+                          <span className="ml-3 text-slate-500 font-medium italic text-xs">Unassigned</span>
+                        )}
                       </div>
                     </td>
-                    <td className="py-6 px-6">
-                      <span className="text-slate-300 font-bold text-sm">{task.assignedBy?.name || "Admin"}</span>
+                    <td className="py-3 px-4">
+                      <span className="text-slate-300 font-bold text-xs">{task.assignedBy?.name || "Admin"}</span>
                     </td>
-                    <td className="py-6 px-6">
+                    <td className="py-3 px-4">
                       <div className="flex flex-wrap items-center gap-2">
-                        {/* Overdue Badge - Shows for ANY status if criteria met */}
+                        {/* Overdue Badge */}
                         {(() => {
                           const isOverdue = task.deadline && (
                             (task.status === "Completed" || task.status === "Submitted")
@@ -362,7 +424,7 @@ export default function TasksPage() {
                               : (new Date() > new Date(task.deadline))
                           );
                           return isOverdue ? (
-                            <span className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap shadow-[0_0_10px_rgba(244,63,94,0.15)]">
+                            <span className="px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap shadow-[0_0_10px_rgba(244,63,94,0.15)]">
                               Overdue
                             </span>
                           ) : null;
@@ -370,41 +432,41 @@ export default function TasksPage() {
 
                         {/* Primary Status Badges */}
                         {task.status === "Submitted" ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
                             Submitted
                           </span>
                         ) : (task.isInProgress || task.status === "In Progress") ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap animate-pulse">
+                          <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap animate-pulse">
                             In Progress
                           </span>
                         ) : task.status === "Completed" ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                             Completed
                           </span>
                         ) : task.status === "Rejected" ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 whitespace-nowrap">
                             Rejected
                           </span>
                         ) : (task.status === "Pending" || task.status === "Created") ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-700/50 text-slate-400 border border-slate-600 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-700/50 text-slate-400 border border-slate-600 whitespace-nowrap">
                             {task.status === "Created" ? "Created" : "Pending"}
                           </span>
                         ) : null}
                       </div>
                     </td>
-                    <td className="py-6 px-6">
-                      <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                        <Clock className="h-3.5 w-3.5" />
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium">
+                        <Clock className="h-3 w-3" />
                         {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}
                       </div>
                     </td>
-                    <td className="py-6 px-6 text-right">
+                    <td className="py-3 px-4 text-right">
                       <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setActiveMenu(activeMenu === task._id ? null : task._id)}
-                          className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-600 text-slate-400 hover:text-white transition-all focus:ring-2 focus:ring-indigo-500/50"
+                          className="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-600 text-slate-400 hover:text-white transition-all focus:ring-2 focus:ring-indigo-500/50"
                         >
-                          <MoreVertical className="h-5 w-5" />
+                          <MoreVertical className="h-4 w-4" />
                         </button>
 
                         {activeMenu === task._id && (
@@ -470,6 +532,7 @@ export default function TasksPage() {
         }}
         taskId={selectedTask?._id || null}
         taskTitle={selectedTask?.title || ""}
+        onSuccess={fetchTasks}
       />
 
       <ViewTaskDetailsModal

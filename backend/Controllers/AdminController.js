@@ -273,13 +273,7 @@ export const updateEmployee = async (req, res) => {
     const { 
       name, 
       email, 
-      designation, 
-      category, 
-      employeeType, 
-      temporaryType, 
-      phoneNumber, 
-      reportingManager,
-      isSeniorEmployee 
+      isSeniorEmployee
     } = req.body;
 
     const employee = await User.findById(req.params.id);
@@ -406,6 +400,38 @@ export const deleteUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Delete User Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+/**
+ * @desc    Get employees by designation
+ * @route   GET /api/admin/employees-by-designation
+ * @access  Private (Admin or Manager)
+ */
+export const getEmployeesByDesignation = async (req, res) => {
+  try {
+    const { designation } = req.query;
+    
+    let query = { role: "EMPLOYEE" };
+    if (designation) {
+      query.designation = designation;
+    }
+
+    // If user is a Manager, only show their direct reports with that designation
+    if (req.user.role === "EMPLOYEE") {
+      query.reportingManager = req.user._id;
+    }
+
+    const employees = await User.find(query).select("name employeeId designation");
+    res.status(200).json({
+      success: true,
+      data: employees,
+    });
+  } catch (error) {
+    console.error("Get Employees By Designation Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",

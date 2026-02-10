@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckSquare, Calendar, User, Loader2, CheckCircle2, AlertCircle, FileText, Layers } from "lucide-react";
 import axios from "axios";
+import EmployeeSelector from "./EmployeeSelector";
 
 interface UpdateTaskModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface Task {
     name: string;
     employeeId: string;
     designation?: string;
-  };
+  }[];
   deadline: string;
   status: string;
 }
@@ -40,15 +41,13 @@ export default function UpdateTaskModal({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    assignedTo: "",
+    assignedTo: [] as string[],
     deadline: "",
     status: "",
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [employeeSearch, setEmployeeSearch] = useState("");
-  const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -70,16 +69,10 @@ export default function UpdateTaskModal({
         setFormData({
             title: task.title || "",
             description: task.description || "",
-            assignedTo: task.assignedTo._id || "",
+            assignedTo: (task.assignedTo || []).map(emp => emp._id),
             deadline: formattedDeadline,
             status: task.status || "Created",
         });
-
-        if (task.assignedTo) {
-            setEmployeeSearch(`${task.assignedTo.name} (${task.assignedTo.designation || 'No Designation'})`);
-        } else {
-            setEmployeeSearch("");
-        }
     }
   }, [task, isOpen]);
 
@@ -143,8 +136,6 @@ export default function UpdateTaskModal({
 
   const handleClose = () => {
     setSuccess(false);
-    setEmployeeSearch("");
-    setShowEmployeeDropdown(false);
     onSuccess();
     onClose();
   };
@@ -229,81 +220,15 @@ export default function UpdateTaskModal({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Assign To - Searchable */}
-                  <div className="space-y-2 relative">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Assign To</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                      <input
-                        type="text"
-                        placeholder={loadingEmployees ? "Loading..." : "Search by name or designation..."}
-                        value={employeeSearch}
-                        onFocus={() => setShowEmployeeDropdown(true)}
-                        onChange={(e) => {
-                          setEmployeeSearch(e.target.value);
-                          setShowEmployeeDropdown(true);
-                          if (formData.assignedTo) {
-                            setFormData({ ...formData, assignedTo: "" });
-                          }
-                        }}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                      />
-
-                      {employeeSearch && (
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setEmployeeSearch("");
-                            setFormData({ ...formData, assignedTo: "" });
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-
-                    {showEmployeeDropdown && !loadingEmployees && (
-                      <div className="absolute z-[110] left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-2">
-                        {employees
-                          .filter(emp => 
-                            emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) || 
-                            (emp.designation && emp.designation.toLowerCase().includes(employeeSearch.toLowerCase()))
-                          )
-                          .length > 0 ? (
-                          employees
-                            .filter(emp => 
-                              emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) || 
-                              (emp.designation && emp.designation.toLowerCase().includes(employeeSearch.toLowerCase()))
-                            )
-                            .map((emp) => (
-                              <button
-                                key={emp._id}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, assignedTo: emp._id });
-                                  setEmployeeSearch(`${emp.name} (${emp.designation || 'No Designation'})`);
-                                  setShowEmployeeDropdown(false);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-slate-700 transition-colors flex flex-col border-b border-slate-700/50 last:border-0"
-                              >
-                                <span className="text-white font-bold text-sm">{emp.name}</span>
-                                <span className="text-indigo-400 text-[10px] uppercase font-bold tracking-wider">{emp.designation || 'No Designation'}</span>
-                              </button>
-                            ))
-                        ) : (
-                          <div className="px-4 py-3 text-slate-400 text-sm italic">
-                            No employees found matching "{employeeSearch}"
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {showEmployeeDropdown && (
-                      <div 
-                        className="fixed inset-0 z-[105]" 
-                        onClick={() => setShowEmployeeDropdown(false)}
-                      />
-                    )}
+                  {/* Assign To Selection */}
+                  <div className="md:col-span-2">
+                    <EmployeeSelector
+                      label="Assign To"
+                      value={formData.assignedTo}
+                      onChange={(val) => setFormData({ ...formData, assignedTo: val })}
+                      placeholder="Select employee(s)"
+                      multiSelect={true}
+                    />
                   </div>
 
                   {/* Deadline */}
