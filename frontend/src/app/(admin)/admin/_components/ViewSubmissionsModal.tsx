@@ -8,6 +8,7 @@ interface ViewSubmissionsModalProps {
   onClose: () => void;
   taskId: string | null;
   taskTitle: string;
+  onSuccess?: () => void;
 }
 
 interface Submission {
@@ -34,6 +35,7 @@ export default function ViewSubmissionsModal({
   onClose,
   taskId,
   taskTitle,
+  onSuccess,
 }: ViewSubmissionsModalProps) {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(false);
@@ -87,6 +89,7 @@ export default function ViewSubmissionsModal({
       );
       if (response.data.success) {
         alert("Submission approved and task marked as completed.");
+        if (onSuccess) onSuccess();
         onClose();
       }
     } catch (err: any) {
@@ -116,6 +119,7 @@ export default function ViewSubmissionsModal({
         alert("Submission rejected.");
         setRejectionModalOpen(false);
         setRejectionReason("");
+        if (onSuccess) onSuccess();
         fetchSubmissions();
       }
     } catch (err: any) {

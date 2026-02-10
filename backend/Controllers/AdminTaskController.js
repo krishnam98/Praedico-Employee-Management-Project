@@ -7,7 +7,21 @@ import { checkAndUpdateOverdueTasks } from "../Utils/checkOverdueTasks.js";
 // Create a new task and assign to employee
 export const createTask = async (req, res) => {
     try {
-        const { title, description, assignedTo, deadline } = req.body;
+        let { title, description, assignedTo, deadline } = req.body;
+
+        // If assignedTo is a string (e.g. from FormData as JSON), parse it
+        if (typeof assignedTo === "string") {
+            try {
+                assignedTo = JSON.parse(assignedTo);
+            } catch (e) {
+                // If not valid JSON, treat as single ID and wrap in array
+                assignedTo = [assignedTo];
+            }
+        } else if (!Array.isArray(assignedTo)) {
+            // Ensure it's an array even if single ID is sent directly
+            assignedTo = [assignedTo];
+        }
+
 
         let attachmentUrl = "";
         if (req.file) {

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X, UserCog, Mail, User, Loader2, CheckCircle2, AlertCircle, Briefcase, Phone, Layers, UserCheck } from "lucide-react";
 import axios from "axios";
+import EmployeeSelector from "./EmployeeSelector";
 
 interface UpdateEmployeeModalProps {
   isOpen: boolean;
@@ -330,84 +331,15 @@ export default function UpdateEmployeeModal({
                   </div>
                 )}
 
-                {/* Reporting Manager Searchable */}
-                <div className="space-y-2 relative">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Reporting Manager</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                    <input
-                      type="text"
-                      placeholder={loadingManagers ? "Loading..." : "Search by name or designation..."}
-                      value={managerSearch}
-                      onFocus={() => setShowManagerDropdown(true)}
-                      onChange={(e) => {
-                        setManagerSearch(e.target.value);
-                        setShowManagerDropdown(true);
-                        if (formData.reportingManager) {
-                          setFormData({ ...formData, reportingManager: "" });
-                        }
-                      }}
-                      className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                {/* Reporting Manager Selection */}
+                <div className="md:col-span-2">
+                    <EmployeeSelector
+                        label="Reporting Manager"
+                        value={formData.reportingManager}
+                        onChange={(val) => setFormData({ ...formData, reportingManager: val })}
+                        placeholder="Select a manager"
+                        multiSelect={false}
                     />
-                    
-                    {/* Clear button */}
-                    {managerSearch && (
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          setManagerSearch("");
-                          setFormData({ ...formData, reportingManager: "" });
-                        }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Dropdown for Managers */}
-                  {showManagerDropdown && !loadingManagers && (
-                    <div className="absolute z-[110] left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-2">
-                      {managers
-                        .filter(m => 
-                          m.name.toLowerCase().includes(managerSearch.toLowerCase()) || 
-                          m.designation.toLowerCase().includes(managerSearch.toLowerCase())
-                        )
-                        .length > 0 ? (
-                        managers
-                          .filter(m => 
-                            m.name.toLowerCase().includes(managerSearch.toLowerCase()) || 
-                            m.designation.toLowerCase().includes(managerSearch.toLowerCase())
-                          )
-                          .map((manager) => (
-                            <button
-                              key={manager._id}
-                              type="button"
-                              onClick={() => {
-                                setFormData({ ...formData, reportingManager: manager._id });
-                                setManagerSearch(`${manager.name} (${manager.designation})`);
-                                setShowManagerDropdown(false);
-                              }}
-                              className="w-full text-left px-4 py-3 hover:bg-slate-700 transition-colors flex flex-col border-b border-slate-700/50 last:border-0"
-                            >
-                              <span className="text-white font-bold text-sm">{manager.name}</span>
-                              <span className="text-indigo-400 text-[10px] uppercase font-bold tracking-wider">{manager.designation}</span>
-                            </button>
-                          ))
-                      ) : (
-                        <div className="px-4 py-3 text-slate-400 text-sm italic">
-                          No managers found matching "{managerSearch}"
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {/* Backdrop for closing dropdown */}
-                  {showManagerDropdown && (
-                    <div 
-                      className="fixed inset-0 z-[105]" 
-                      onClick={() => setShowManagerDropdown(false)}
-                    />
-                  )}
                 </div>
 
                 {/* Senior Employee Toggle */}

@@ -34,7 +34,7 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
 
     // Fetch existing submission if task is already submitted
     useEffect(() => {
-        if (isOpen && task.status === "Submitted") {
+        if (isOpen && (task.status === "Submitted" || task.status === "Rejected")) {
             fetchExistingSubmission();
         } else if (isOpen) {
             // Reset form for new submission

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckSquare, Calendar, User, Loader2, CheckCircle2, AlertCircle, FileText } from "lucide-react";
 import axios from "axios";
+import EmployeeSelector from "./EmployeeSelector";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export default function CreateTaskModal({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    assignedTo: "",
+    assignedTo: [] as string[],
     deadline: "",
   });
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -85,7 +86,8 @@ export default function CreateTaskModal({
       const data = new FormData();
       data.append("title", formData.title);
       data.append("description", formData.description);
-      data.append("assignedTo", formData.assignedTo);
+      // Backend expects assignedTo as a JSON string when using FormData or multiple fields
+      data.append("assignedTo", JSON.stringify(formData.assignedTo));
       data.append("deadline", formData.deadline);
       if (attachment) {
         data.append("attachment", attachment);
@@ -120,7 +122,7 @@ export default function CreateTaskModal({
     setFormData({
       title: "",
       description: "",
-      assignedTo: "",
+      assignedTo: [],
       deadline: "",
     });
     setAttachment(null);
@@ -134,27 +136,33 @@ export default function CreateTaskModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shrink-0" />
 
-        <div className="p-8">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 p-6 shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all z-30"
           >
             <X className="h-5 w-5" />
           </button>
 
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-4 border border-indigo-500/20">
-              <CheckSquare className="h-8 w-8 text-indigo-400" />
+          <div className="flex items-center gap-5">
+            <div className="h-14 w-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shrink-0 shadow-lg shadow-indigo-500/5">
+              <CheckSquare className="h-7 w-7 text-indigo-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Create New Task</h2>
-            <p className="text-slate-400 text-sm mt-1">
-              Assign a new task to an employee
-            </p>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight">Create New Task</h2>
+              <p className="text-slate-400 text-sm font-medium mt-0.5">
+                Assign a new task to an employee
+              </p>
+            </div>
           </div>
+        </div>
 
+        {/* Scrollable Body */}
+        <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
           {success ? (
             <div className="flex flex-col items-center py-8 animate-in zoom-in duration-300">
               <div className="h-20 w-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 border border-emerald-500/20">
@@ -175,6 +183,15 @@ export default function CreateTaskModal({
               )}
 
               <div className="space-y-6">
+                {/* Assign To Selection */}
+                <EmployeeSelector
+                  label="Assign To"
+                  value={formData.assignedTo}
+                  onChange={(val) => setFormData({ ...formData, assignedTo: val })}
+                  placeholder="Select employee(s)"
+                  multiSelect={true}
+                />
+
                 {/* Title */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Task Title</label>
@@ -209,104 +226,7 @@ export default function CreateTaskModal({
                   </div>
                 </div>
 
-                {/* Attachment - NOW FILE UPLOAD */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Attachment (File)</label>
-                  <div className="relative">
-                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                    <input
-                      type="file"
-                      name="attachment"
-                      onChange={handleFileChange}
-                      className="w-full pl-12 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer"
-                    />
-                  </div>
-                  {attachment && (
-                      <p className="text-xs text-emerald-400 ml-1 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Selected: {attachment.name}
-                      </p>
-                  )}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Assign To - Searchable */}
-                  <div className="space-y-2 relative">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Assign To</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                      <input
-                        type="text"
-                        placeholder={loadingEmployees ? "Loading..." : "Search by name or designation..."}
-                        value={employeeSearch}
-                        onFocus={() => setShowEmployeeDropdown(true)}
-                        onChange={(e) => {
-                          setEmployeeSearch(e.target.value);
-                          setShowEmployeeDropdown(true);
-                          if (formData.assignedTo) {
-                            setFormData({ ...formData, assignedTo: "" });
-                          }
-                        }}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                      />
-
-                      {employeeSearch && (
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setEmployeeSearch("");
-                            setFormData({ ...formData, assignedTo: "" });
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-
-                    {showEmployeeDropdown && !loadingEmployees && (
-                      <div className="absolute z-[110] left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-2">
-                        {employees
-                          .filter(emp => 
-                            emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) || 
-                            (emp.designation && emp.designation.toLowerCase().includes(employeeSearch.toLowerCase()))
-                          )
-                          .length > 0 ? (
-                          employees
-                            .filter(emp => 
-                              emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) || 
-                              (emp.designation && emp.designation.toLowerCase().includes(employeeSearch.toLowerCase()))
-                            )
-                            .map((emp) => (
-                              <button
-                                key={emp._id}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, assignedTo: emp._id });
-                                  setEmployeeSearch(`${emp.name} (${emp.designation || 'No Designation'})`);
-                                  setShowEmployeeDropdown(false);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-slate-700 transition-colors flex flex-col border-b border-slate-700/50 last:border-0"
-                              >
-                                <span className="text-white font-bold text-sm">{emp.name}</span>
-                                <span className="text-indigo-400 text-[10px] uppercase font-bold tracking-wider">{emp.designation || 'No Designation'}</span>
-                              </button>
-                            ))
-                        ) : (
-                          <div className="px-4 py-3 text-slate-400 text-sm italic">
-                            No employees found matching "{employeeSearch}"
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {showEmployeeDropdown && (
-                      <div 
-                        className="fixed inset-0 z-[105]" 
-                        onClick={() => setShowEmployeeDropdown(false)}
-                      />
-                    )}
-                  </div>
-
                   {/* Deadline */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Deadline</label>
@@ -318,12 +238,33 @@ export default function CreateTaskModal({
                         required
                         value={formData.deadline}
                         onChange={handleChange}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none" // appearance-none on date input forces custom style in some browsers, but mainly for select
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
                   </div>
+
+                  {/* Attachment */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Attachment (File)</label>
+                    <div className="relative">
+                      <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                      <input
+                        type="file"
+                        name="attachment"
+                        onChange={handleFileChange}
+                        className="w-full pl-12 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer"
+                      />
+                    </div>
+                  </div>
                 </div>
+                
+                {attachment && (
+                  <p className="text-xs text-emerald-400 ml-1 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Selected: {attachment.name}
+                  </p>
+                )}
               </div>
 
               <div className="pt-4 text-right">
