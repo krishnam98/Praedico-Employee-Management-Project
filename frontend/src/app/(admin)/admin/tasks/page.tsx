@@ -22,6 +22,7 @@ import CreateTaskModal from "../_components/CreateTaskModal";
 import ViewSubmissionsModal from "../_components/ViewSubmissionsModal";
 import UpdateTaskModal from "../_components/UpdateTaskModal";
 import ViewTaskDetailsModal from "../_components/ViewTaskDetailsModal";
+import { Employee } from "../_components/EmployeeSelector";
 
 // --- Custom Select Component (Reused) ---
 function CustomSelect({
@@ -96,12 +97,7 @@ interface Task {
   title: string;
   description: string;
   status: string;
-  assignedTo: {
-    _id: string;
-    name: string;
-    email: string;
-    employeeId: string;
-  }[];
+  assignedTo: Employee[];
   assignedBy: {
     _id: string;
     name: string;
@@ -207,13 +203,17 @@ export default function TasksPage() {
         : (new Date() > new Date(task.deadline))
     ));
 
-    const matchesStatus = statusFilter === "all"
-      ? true
-      : statusFilter === "Overdue"
-        ? isTaskOverdue
-        : statusFilter === "In Progress"
-          ? (task.status === "In Progress" || task.isInProgress)
-          : task.status === statusFilter;
+    const isUpcoming = !!(task.startDate && new Date(task.startDate) > new Date());
+
+    const matchesStatus = statusFilter === "all" 
+      ? true 
+      : statusFilter === "Overdue" 
+        ? isTaskOverdue 
+        : statusFilter === "Upcoming"
+          ? isUpcoming
+          : statusFilter === "In Progress"
+            ? (task.status === "In Progress" || task.isInProgress)
+            : task.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -251,10 +251,14 @@ export default function TasksPage() {
 
       {/* Stats Quick View - Collapsible */}
       {showStats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 animate-in slide-in-from-top-4 duration-500">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 animate-in slide-in-from-top-4 duration-500">
           <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-indigo-500/30 transition-all">
             <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Total Tasks</p>
             <h3 className="text-3xl font-black text-white">{tasks.length}</h3>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-violet-500/30 transition-all">
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Upcoming</p>
+            <h3 className="text-3xl font-black text-violet-400">{tasks.filter(t => t.startDate && new Date(t.startDate) > new Date()).length}</h3>
           </div>
           <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-amber-500/30 transition-all">
             <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">In Progress</p>
@@ -301,7 +305,7 @@ export default function TasksPage() {
           <CustomSelect
             value={statusFilter}
             onChange={setStatusFilter}
-            options={["Created", "Pending", "In Progress", "Submitted", "Completed", "Overdue", "Rejected"]}
+            options={["Created", "Pending", "In Progress", "Submitted", "Completed", "Overdue", "Rejected", "Upcoming"]}
             placeholder="All Status"
             icon={Filter}
           />
@@ -338,7 +342,7 @@ export default function TasksPage() {
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned To</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned By</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Status</th>
-                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Dates</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Duration</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
@@ -456,33 +460,15 @@ export default function TasksPage() {
                         ) : null}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium">
-                          <Clock className="h-3 w-3" />
-                          <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-1.5 text-slate-300 text-[10px] font-bold">
+                          <Calendar className="h-3 w-3 text-indigo-400" />
+                          <span>{task.startDate ? new Date(task.startDate).toLocaleDateString() : "Immediate"}</span>
                         </div>
-                        {task.startDate && (
-                          <div className="flex items-center gap-1.5 text-amber-500 text-[10px] font-bold">
-                            <Calendar className="h-3 w-3" />
-                            <span>Start: {new Date(task.startDate).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                        {task.taskStarted && (
-                          <div className="flex items-center gap-1.5 text-indigo-400 text-[10px] font-bold">
-                            <Clock className="h-3 w-3" />
-                            <span>Started: {new Date(task.taskStarted).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                        {task.submittedAt && (
-                          <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold">
-                            <CheckCircle2 className="h-3 w-3" />
-                            <span>Recent Submit: {new Date(task.submittedAt).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                        <div className={`flex items-center gap-1.5 text-[10px] font-bold ${new Date() > new Date(task.deadline) && task.status !== "Completed" ? "text-rose-500 animate-pulse" : "text-orange-400"}`}>
-                          <Clock className="h-3 w-3" />
-                          <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium">
+                          <Clock className="h-3 w-3 text-rose-400/70" />
+                          <span>{task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}</span>
                         </div>
                       </div>
                     </td>
@@ -505,7 +491,7 @@ export default function TasksPage() {
                                 <Edit className="h-4 w-4" />
                                 Edit Task
                               </button>
-                              {task.status !== "Created" && task.status !== "In Progress" && !task.isInProgress && (
+                              {task.status !== "Created" && task.status !== "Upcoming" && (
                                 <button
                                   onClick={() => handleViewSubmissions(task)}
                                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700/50 transition-all"

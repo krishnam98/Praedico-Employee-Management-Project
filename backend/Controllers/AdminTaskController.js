@@ -32,27 +32,37 @@ export const createTask = async (req, res) => {
             attachmentUrl = req.body.attachment;
         }
 
-        // Generate taskId
-        const counter = await Counter.findOneAndUpdate(
-            { id: "taskId" },
-            { $inc: { seq: 1 } },
-            { new: true, upsert: true }
-        );
-        const taskId = `TSK-${counter.seq}`;
+        const createdTasks = [];
 
-        const task = await Task.create({
-            title,
-            description,
-            status: "Created",
-            assignedTo,
-            assignedBy: req.user._id,
-            taskId,
-            startDate,
-            deadline,
-            attachment: attachmentUrl
+        // Create individual tasks for each employee
+        for (const employeeId of assignedTo) {
+            // Generate taskId for each task
+            const counter = await Counter.findOneAndUpdate(
+                { id: "taskId" },
+                { $inc: { seq: 1 } },
+                { new: true, upsert: true }
+            );
+            const taskId = `TSK-${counter.seq}`;
+
+            const task = await Task.create({
+                title,
+                description,
+                status: "Created",
+                assignedTo: [employeeId], // Each task is assigned to only one employee
+                assignedBy: req.user._id,
+                taskId,
+                deadline,
+                startDate,
+                attachment: attachmentUrl
+            });
+            createdTasks.push(task);
+        }
+
+        res.status(201).json({ 
+            success: true, 
+            message: `${createdTasks.length} task(s) created successfully`,
+            data: createdTasks 
         });
-
-        res.status(201).json({ success: true, data: task });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

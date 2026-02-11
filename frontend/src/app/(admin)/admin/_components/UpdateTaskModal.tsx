@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckSquare, Calendar, User, Loader2, CheckCircle2, AlertCircle, FileText, Layers } from "lucide-react";
 import axios from "axios";
-import EmployeeSelector from "./EmployeeSelector";
+import EmployeeSelector, { Employee } from "./EmployeeSelector";
 
 interface UpdateTaskModalProps {
   isOpen: boolean;
@@ -15,23 +15,12 @@ interface Task {
   _id: string;
   title: string;
   description: string;
-  assignedTo: {
-    _id: string;
-    name: string;
-    employeeId: string;
-    designation?: string;
-  }[];
+  assignedTo: Employee[];
   deadline: string;
   startDate?: string;
   status: string;
 }
 
-interface Employee {
-  _id: string;
-  name: string;
-  employeeId: string;
-  designation?: string;
-}
 
 export default function UpdateTaskModal({
   isOpen,
@@ -61,28 +50,27 @@ export default function UpdateTaskModal({
 
   useEffect(() => {
     if (task && isOpen) {
-      // Format deadline date for input (YYYY-MM-DD)
-      let formattedDeadline = "";
-      if (task.deadline) {
-        const date = new Date(task.deadline);
-        formattedDeadline = date.toISOString().split('T')[0];
-      }
+        // Format dates for input (YYYY-MM-DD)
+        let formattedDeadline = "";
+        if (task.deadline) {
+            const date = new Date(task.deadline);
+            formattedDeadline = date.toISOString().split('T')[0];
+        }
 
-      // Format startDate date for input (YYYY-MM-DD)
-      let formattedStartDate = "";
-      if (task.startDate) {
-        const date = new Date(task.startDate);
-        formattedStartDate = date.toISOString().split('T')[0];
-      }
+        let formattedStartDate = "";
+        if (task.startDate) {
+            const date = new Date(task.startDate);
+            formattedStartDate = date.toISOString().split('T')[0];
+        }
 
-      setFormData({
-        title: task.title || "",
-        description: task.description || "",
-        assignedTo: (task.assignedTo || []).map(emp => emp._id),
-        deadline: formattedDeadline,
-        startDate: formattedStartDate,
-        status: task.status || "Created",
-      });
+        setFormData({
+            title: task.title || "",
+            description: task.description || "",
+            assignedTo: (task.assignedTo || []).map(emp => emp._id),
+            startDate: formattedStartDate,
+            deadline: formattedDeadline,
+            status: task.status || "Created",
+        });
     }
   }, [task, isOpen]);
 
@@ -235,10 +223,28 @@ export default function UpdateTaskModal({
                     <EmployeeSelector
                       label="Assign To"
                       value={formData.assignedTo}
+                      allEmployees={employees}
                       onChange={(val) => setFormData({ ...formData, assignedTo: val })}
                       placeholder="Select employee(s)"
                       multiSelect={true}
                     />
+                  </div>
+
+                  {/* Start Date */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                      <input
+                        type="date"
+                        name="startDate"
+                        required
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
                   </div>
 
                   {/* Deadline */}

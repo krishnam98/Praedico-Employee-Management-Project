@@ -2,20 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckSquare, Calendar, User, Loader2, CheckCircle2, AlertCircle, FileText } from "lucide-react";
 import axios from "axios";
-import EmployeeSelector from "./EmployeeSelector";
+import EmployeeSelector, { Employee } from "./EmployeeSelector";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-interface Employee {
-  _id: string;
-  name: string;
-  employeeId: string;
-  email: string;
-  designation?: string;
 }
 
 export default function CreateTaskModal({
@@ -190,6 +182,7 @@ export default function CreateTaskModal({
                 <EmployeeSelector
                   label="Assign To"
                   value={formData.assignedTo}
+                  allEmployees={employees}
                   onChange={(val) => setFormData({ ...formData, assignedTo: val })}
                   placeholder="Select employee(s)"
                   multiSelect={true}
@@ -230,23 +223,6 @@ export default function CreateTaskModal({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Deadline */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Deadline</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                      <input
-                        type="date"
-                        name="deadline"
-                        required
-                        value={formData.deadline}
-                        onChange={handleChange}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
-                        style={{ colorScheme: "dark" }}
-                      />
-                    </div>
-                  </div>
-
                   {/* Start Date */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
@@ -264,18 +240,35 @@ export default function CreateTaskModal({
                     </div>
                   </div>
 
-                  {/* Attachment */}
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Attachment (File)</label>
+                  {/* Deadline */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Deadline</label>
                     <div className="relative">
-                      <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
                       <input
-                        type="file"
-                        name="attachment"
-                        onChange={handleFileChange}
-                        className="w-full pl-12 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer"
+                        type="date"
+                        name="deadline"
+                        required
+                        value={formData.deadline}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
+                        style={{ colorScheme: "dark" }}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Attachment */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Attachment (File)</label>
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                    <input
+                      type="file"
+                      name="attachment"
+                      onChange={handleFileChange}
+                      className="w-full pl-12 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer"
+                    />
                   </div>
                 </div>
 

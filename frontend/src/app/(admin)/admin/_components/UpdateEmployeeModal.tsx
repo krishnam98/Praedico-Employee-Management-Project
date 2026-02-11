@@ -150,30 +150,35 @@ export default function UpdateEmployeeModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
         {/* Top Gradient Bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shrink-0" />
 
-        <div className="p-8">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 p-6 shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all z-30"
           >
             <X className="h-5 w-5" />
           </button>
 
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-4 border border-indigo-500/20">
-              <UserCog className="h-8 w-8 text-indigo-400" />
+          <div className="flex items-center gap-5">
+            <div className="h-14 w-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shrink-0 shadow-lg shadow-indigo-500/5">
+              <UserCog className="h-7 w-7 text-indigo-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Update Employee</h2>
-            <p className="text-slate-400 text-sm mt-1">
-              Edit employee information for {employee.name}
-            </p>
-            <p className="text-indigo-400 text-xs mt-1 font-bold">
-              ID: {employee.employeeId || employee._id}
-            </p>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight">Update Employee</h2>
+              <p className="text-slate-400 text-sm font-medium mt-0.5">
+                Editing: <span className="text-indigo-400 font-bold">{employee.name}</span> <span className="text-slate-500 text-xs ml-2">({employee.employeeId || employee._id})</span>
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+
 
           {success ? (
             <div className="flex flex-col items-center py-8 animate-in zoom-in duration-300">
