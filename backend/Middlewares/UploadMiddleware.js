@@ -18,7 +18,7 @@ const storage = new CloudinaryStorage({
 
         return {
             folder: "praedico-uploads",
-            resource_type: isImage ? "image" : "raw",
+            resource_type: "auto",
             public_id: file.originalname.split('.')[0].replace(/\s+/g, '_') + "-" + Date.now(),
         };
     },

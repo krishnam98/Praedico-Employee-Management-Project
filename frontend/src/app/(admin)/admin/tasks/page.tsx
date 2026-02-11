@@ -14,7 +14,8 @@ import {
   Plus,
   Edit,
   ChevronDown,
-  LayoutDashboard
+  LayoutDashboard,
+  CheckCircle2
 } from "lucide-react";
 import axios from "axios";
 import CreateTaskModal from "../_components/CreateTaskModal";
@@ -106,6 +107,7 @@ interface Task {
     name: string;
   };
   deadline: string;
+  startDate?: string;
   createdAt: string;
   submittedAt?: string;
   isInProgress?: boolean;
@@ -194,7 +196,7 @@ export default function TasksPage() {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.taskId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (task.assignedTo || []).some(emp => 
+      (task.assignedTo || []).some(emp =>
         (emp?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (emp?.employeeId || "").toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -205,10 +207,10 @@ export default function TasksPage() {
         : (new Date() > new Date(task.deadline))
     ));
 
-    const matchesStatus = statusFilter === "all" 
-      ? true 
-      : statusFilter === "Overdue" 
-        ? isTaskOverdue 
+    const matchesStatus = statusFilter === "all"
+      ? true
+      : statusFilter === "Overdue"
+        ? isTaskOverdue
         : statusFilter === "In Progress"
           ? (task.status === "In Progress" || task.isInProgress)
           : task.status === statusFilter;
@@ -227,9 +229,9 @@ export default function TasksPage() {
               Task Management
             </h1>
             <button
-               onClick={() => setShowStats(!showStats)}
-               className={`mt-1 p-2 rounded-xl transition-all border ${showStats ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/20' : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-700 hover:text-white'}`}
-               title={showStats ? "Hide Stats" : "Show Stats"}
+              onClick={() => setShowStats(!showStats)}
+              className={`mt-1 p-2 rounded-xl transition-all border ${showStats ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/20' : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-700 hover:text-white'}`}
+              title={showStats ? "Hide Stats" : "Show Stats"}
             >
               <LayoutDashboard className={`h-5 w-5 transition-transform duration-300 ${showStats ? 'rotate-180 scale-110' : ''}`} />
             </button>
@@ -336,7 +338,7 @@ export default function TasksPage() {
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned To</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Assigned By</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Status</th>
-                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Deadline</th>
+                  <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Dates</th>
                   <th className="py-3 px-4 text-slate-400 font-bold text-xs uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
@@ -359,7 +361,7 @@ export default function TasksPage() {
                       <div className="flex items-center">
                         <div className="flex -space-x-3 overflow-hidden">
                           {(task.assignedTo || []).slice(0, 3).map((emp, idx) => (
-                            <div 
+                            <div
                               key={emp._id}
                               className="relative group/avatar"
                               title={`${emp.name} (${emp.employeeId})`}
@@ -375,12 +377,12 @@ export default function TasksPage() {
                             </div>
                           )}
                         </div>
-                        
+
                         {(task.assignedTo || []).length > 0 ? (
                           <div className="ml-3 group/list relative">
                             <p className="text-white font-bold text-xs leading-none mb-0.5 group-hover/list:text-indigo-400 transition-colors truncate max-w-[120px]">
                               {(task.assignedTo || [])[0].name}
-                              {(task.assignedTo || []).length > 1 && <span className="text-slate-500 ml-1">+{ (task.assignedTo || []).length - 1 }</span>}
+                              {(task.assignedTo || []).length > 1 && <span className="text-slate-500 ml-1">+{(task.assignedTo || []).length - 1}</span>}
                             </p>
                             <div className="flex items-center gap-1 text-slate-500 text-[10px] font-medium">
                               <span>{(task.assignedTo || [])[0].employeeId}</span>
@@ -455,9 +457,33 @@ export default function TasksPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium">
-                        <Clock className="h-3 w-3" />
-                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium">
+                          <Clock className="h-3 w-3" />
+                          <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        {task.startDate && (
+                          <div className="flex items-center gap-1.5 text-amber-500 text-[10px] font-bold">
+                            <Calendar className="h-3 w-3" />
+                            <span>Start: {new Date(task.startDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {task.taskStarted && (
+                          <div className="flex items-center gap-1.5 text-indigo-400 text-[10px] font-bold">
+                            <Clock className="h-3 w-3" />
+                            <span>Started: {new Date(task.taskStarted).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {task.submittedAt && (
+                          <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>Recent Submit: {new Date(task.submittedAt).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        <div className={`flex items-center gap-1.5 text-[10px] font-bold ${new Date() > new Date(task.deadline) && task.status !== "Completed" ? "text-rose-500 animate-pulse" : "text-orange-400"}`}>
+                          <Clock className="h-3 w-3" />
+                          <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-right">

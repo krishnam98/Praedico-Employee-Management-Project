@@ -12,6 +12,7 @@ const taskSchema = new mongoose.Schema({
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Admin ID
   taskId: { type: String, required: true, unique: true },
   deadline: { type: Date },
+  startDate: { type: Date }, // Date when task can be started
   attachment: { type: String }, // URL or file path for task attachment
   isInProgress: { type: Boolean, default: false }, // Tracks if employee is currently working
   rejectionReason: { type: String }, // Reason why the task was rejected

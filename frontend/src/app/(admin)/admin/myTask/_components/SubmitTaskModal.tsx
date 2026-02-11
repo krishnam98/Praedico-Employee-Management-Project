@@ -21,6 +21,7 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
     const [success, setSuccess] = useState(false);
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [existingAttachment, setExistingAttachment] = useState("");
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     const ALLOWED_FILE_TYPES = [
@@ -44,6 +45,7 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
             setAttachmentFile(null);
             setIsEditMode(false);
             setSubmissionId(null);
+            setExistingAttachment("");
         }
     }, [isOpen, task]);
 
@@ -61,9 +63,19 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
             if (data.success && data.data) {
                 setTitle(data.data.title);
                 setDescription(data.data.description);
-                setAttachmentLink(data.data.attachment || "");
+                const att = data.data.attachment || "";
                 setSubmissionId(data.data._id);
                 setIsEditMode(true);
+                setExistingAttachment(att);
+
+                // Detect if it's a Cloudinary URL or a regular link
+                if (att.includes("res.cloudinary.com") || att.includes("praedico-uploads")) {
+                    setAttachmentType("file");
+                    setAttachmentLink(""); // Clear link input for file mode
+                } else {
+                    setAttachmentType("link");
+                    setAttachmentLink(att);
+                }
             }
         } catch (err) {
             console.error("Error fetching submission:", err);
@@ -103,8 +115,13 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
             formData.append("title", title);
             formData.append("description", description);
 
-            if (attachmentType === "file" && attachmentFile) {
-                formData.append("attachment", attachmentFile);
+            if (attachmentType === "file") {
+                if (attachmentFile) {
+                    formData.append("attachment", attachmentFile);
+                } else if (isEditMode && existingAttachment && (existingAttachment.includes("res.cloudinary.com") || existingAttachment.includes("praedico-uploads"))) {
+                    // Keep existing file if not replaced
+                    formData.append("attachment", existingAttachment);
+                }
             } else if (attachmentType === "link" && attachmentLink) {
                 formData.append("attachment", attachmentLink);
             }
@@ -150,6 +167,7 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
                     setSuccess(false);
                     setIsEditMode(false);
                     setSubmissionId(null);
+                    setExistingAttachment("");
                 }, 2000);
             } else {
                 setError(data.message || `Failed to ${isEditMode ? 'update' : 'submit'} task`);
@@ -259,9 +277,14 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
                                             type="url"
                                             value={attachmentLink}
                                             onChange={(e) => setAttachmentLink(e.target.value)}
-                                            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
                                             placeholder="https://drive.google.com/file/..."
                                         />
+                                        {isEditMode && attachmentType === "link" && attachmentLink && (
+                                            <p className="text-xs text-indigo-400 mt-2 px-1 flex items-center gap-1">
+                                                <CheckCircle2 size={12} /> Currently using existing link
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 
@@ -280,13 +303,19 @@ export default function SubmitTaskModal({ isOpen, onClose, task, onSuccess }: Su
                                                     <Upload className="text-slate-500 group-hover:text-indigo-500" size={24} />
                                                     <div className="flex-1">
                                                         <p className="text-white font-medium">
-                                                            {attachmentFile ? attachmentFile.name : "Click to upload file"}
+                                                            {attachmentFile
+                                                                ? attachmentFile.name
+                                                                : (isEditMode && attachmentType === "file" && existingAttachment && (existingAttachment.includes("res.cloudinary.com") || existingAttachment.includes("praedico-uploads"))
+                                                                    ? existingAttachment.split('/').pop()?.split('?')[0] || "Existing file"
+                                                                    : "Click to upload file")}
                                                         </p>
                                                         <p className="text-slate-500 text-xs mt-1">
-                                                            PDF, Word, PowerPoint (Max 10MB)
+                                                            {isEditMode && attachmentType === "file" && existingAttachment && (existingAttachment.includes("res.cloudinary.com") || existingAttachment.includes("praedico-uploads")) && !attachmentFile
+                                                                ? "Click to replace existing file"
+                                                                : "PDF, Word, PowerPoint (Max 10MB)"}
                                                         </p>
                                                     </div>
-                                                    {attachmentFile && (
+                                                    {(attachmentFile || (isEditMode && attachmentType === "file" && existingAttachment && (existingAttachment.includes("res.cloudinary.com") || existingAttachment.includes("praedico-uploads")))) && (
                                                         <FileText className="text-indigo-500" size={24} />
                                                     )}
                                                 </div>

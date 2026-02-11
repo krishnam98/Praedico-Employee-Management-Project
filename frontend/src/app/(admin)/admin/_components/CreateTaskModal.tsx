@@ -28,6 +28,7 @@ export default function CreateTaskModal({
     description: "",
     assignedTo: [] as string[],
     deadline: "",
+    startDate: "",
   });
   const [attachment, setAttachment] = useState<File | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -89,6 +90,7 @@ export default function CreateTaskModal({
       // Backend expects assignedTo as a JSON string when using FormData or multiple fields
       data.append("assignedTo", JSON.stringify(formData.assignedTo));
       data.append("deadline", formData.deadline);
+      data.append("startDate", formData.startDate);
       if (attachment) {
         data.append("attachment", attachment);
       }
@@ -107,7 +109,7 @@ export default function CreateTaskModal({
       if (response.data.success) {
         setSuccess(true);
         setTimeout(() => {
-            handleClose();
+          handleClose();
         }, 1500);
       }
     } catch (err: any) {
@@ -124,6 +126,7 @@ export default function CreateTaskModal({
       description: "",
       assignedTo: [],
       deadline: "",
+      startDate: "",
     });
     setAttachment(null);
     setEmployeeSearch("");
@@ -244,8 +247,25 @@ export default function CreateTaskModal({
                     </div>
                   </div>
 
-                  {/* Attachment */}
+                  {/* Start Date */}
                   <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                      <input
+                        type="date"
+                        name="startDate"
+                        required
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Attachment */}
+                  <div className="space-y-2 md:col-span-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Attachment (File)</label>
                     <div className="relative">
                       <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
@@ -258,7 +278,7 @@ export default function CreateTaskModal({
                     </div>
                   </div>
                 </div>
-                
+
                 {attachment && (
                   <p className="text-xs text-emerald-400 ml-1 flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />

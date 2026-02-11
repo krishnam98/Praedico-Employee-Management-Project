@@ -135,6 +135,15 @@ export const updateTaskStatus = async (req, res) => {
             if (task.status !== "Pending" && task.status !== "Overdue" && task.status !== "Created" && task.status !== "Rejected") {
                 return res.status(400).json({ success: false, message: `Cannot change status from ${task.status}` });
             }
+
+            // Check if task can be started (if startDate is in the future)
+            if (task.startDate && new Date(task.startDate) > new Date()) {
+                return res.status(400).json({
+                    success: false,
+                    message: `This task is scheduled to start on ${new Date(task.startDate).toLocaleDateString()}. You cannot start it yet.`
+                });
+            }
+
             task.isInProgress = true;
             task.status = "In Progress";
             task.taskStarted = new Date();

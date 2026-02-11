@@ -6,12 +6,14 @@ interface ViewTaskDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     task: any | null; // using any temporarily to avoid strict type duplication, but ideally match Task interface
+    showAssigned?: boolean;
 }
 
 export default function ViewTaskDetailsModal({
     isOpen,
     onClose,
     task,
+    showAssigned = true,
 }: ViewTaskDetailsModalProps) {
     if (!isOpen || !task) return null;
 
@@ -153,33 +155,35 @@ export default function ViewTaskDetailsModal({
                             </div>
                         )}
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Assigned To */}
-                <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50 md:col-span-2">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <User className="h-4 w-4" /> Assigned Employees ({(task.assignedTo || []).length})
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {(task.assignedTo || []).map((emp: any) => (
-                        <div key={emp._id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-                          <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-black text-sm">
-                            {(emp.name || "?").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                             <p className="text-white font-bold text-sm truncate">{emp.name || "Unknown"}</p>
-                             <div className="flex items-center gap-2">
-                               <p className="text-indigo-400 text-[10px] font-black uppercase tracking-tighter">{emp.employeeId || "N/A"}</p>
-                               <span className="text-slate-600 px-1 font-black">·</span>
-                               <p className="text-slate-500 text-[10px] truncate max-w-[100px]">{emp.email}</p>
-                             </div>
-                          </div>
-                        </div>
-                      ))}
-                      {(task.assignedTo || []).length === 0 && (
-                        <p className="text-slate-500 italic text-sm">No employees assigned.</p>
-                      )}
-                    </div>
-                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Assigned To */}
+                            {showAssigned && (
+                                <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50 md:col-span-2">
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <User className="h-4 w-4" /> Assigned Employees ({(task.assignedTo || []).length})
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {(task.assignedTo || []).map((emp: any) => (
+                                            <div key={emp._id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/50 border border-slate-800">
+                                                <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-black text-sm">
+                                                    {(emp.name || "?").charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-white font-bold text-sm truncate">{emp.name || "Unknown"}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-indigo-400 text-[10px] font-black uppercase tracking-tighter">{emp.employeeId || "N/A"}</p>
+                                                        <span className="text-slate-600 px-1 font-black">·</span>
+                                                        <p className="text-slate-500 text-[10px] truncate max-w-[100px]">{emp.email}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {(task.assignedTo || []).length === 0 && (
+                                            <p className="text-slate-500 italic text-sm">No employees assigned.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Assigned By */}
                             <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
@@ -229,6 +233,36 @@ export default function ViewTaskDetailsModal({
                                             })()}
                                         </p>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* Assigned Start Date */}
+                            <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" /> Assigned Start Date
+                                </h3>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-white font-bold text-2xl">
+                                        {task.startDate ? new Date(task.startDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "Not Set"}
+                                    </p>
+                                    <p className="text-slate-500 font-medium text-sm">
+                                        {task.startDate ? "Date when employee can begin work" : "Manual start date not assigned"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Recent Submit Status */}
+                            <div className="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4" /> Recent Submit Status
+                                </h3>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-white font-bold text-2xl">
+                                        {task.submittedAt ? new Date(task.submittedAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "Not Submitted"}
+                                    </p>
+                                    <p className="text-slate-500 font-medium text-sm">
+                                        {task.submittedAt ? "Most recent work submission date" : "Waiting for employee submission"}
+                                    </p>
                                 </div>
                             </div>
 

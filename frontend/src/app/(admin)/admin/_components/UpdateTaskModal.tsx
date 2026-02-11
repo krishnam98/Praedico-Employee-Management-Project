@@ -22,6 +22,7 @@ interface Task {
     designation?: string;
   }[];
   deadline: string;
+  startDate?: string;
   status: string;
 }
 
@@ -43,6 +44,7 @@ export default function UpdateTaskModal({
     description: "",
     assignedTo: [] as string[],
     deadline: "",
+    startDate: "",
     status: "",
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -59,20 +61,28 @@ export default function UpdateTaskModal({
 
   useEffect(() => {
     if (task && isOpen) {
-        // Format deadline date for input (YYYY-MM-DD)
-        let formattedDeadline = "";
-        if (task.deadline) {
-            const date = new Date(task.deadline);
-            formattedDeadline = date.toISOString().split('T')[0];
-        }
+      // Format deadline date for input (YYYY-MM-DD)
+      let formattedDeadline = "";
+      if (task.deadline) {
+        const date = new Date(task.deadline);
+        formattedDeadline = date.toISOString().split('T')[0];
+      }
 
-        setFormData({
-            title: task.title || "",
-            description: task.description || "",
-            assignedTo: (task.assignedTo || []).map(emp => emp._id),
-            deadline: formattedDeadline,
-            status: task.status || "Created",
-        });
+      // Format startDate date for input (YYYY-MM-DD)
+      let formattedStartDate = "";
+      if (task.startDate) {
+        const date = new Date(task.startDate);
+        formattedStartDate = date.toISOString().split('T')[0];
+      }
+
+      setFormData({
+        title: task.title || "",
+        description: task.description || "",
+        assignedTo: (task.assignedTo || []).map(emp => emp._id),
+        deadline: formattedDeadline,
+        startDate: formattedStartDate,
+        status: task.status || "Created",
+      });
     }
   }, [task, isOpen]);
 
@@ -106,7 +116,7 @@ export default function UpdateTaskModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!task) return;
-    
+
     setLoading(true);
     setError("");
 
@@ -124,7 +134,7 @@ export default function UpdateTaskModal({
       if (response.data.success) {
         setSuccess(true);
         setTimeout(() => {
-            handleClose();
+          handleClose();
         }, 1500);
       }
     } catch (err: any) {
@@ -248,6 +258,23 @@ export default function UpdateTaskModal({
                     </div>
                   </div>
 
+                  {/* Start Date */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                      <input
+                        type="date"
+                        name="startDate"
+                        required
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
+                  </div>
+
                   {/* Status */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
@@ -259,12 +286,12 @@ export default function UpdateTaskModal({
                         onChange={handleChange}
                         className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none"
                       >
-                         <option value="Created" className="bg-slate-900">Created</option>
-                         <option value="Pending" className="bg-slate-900">Pending</option>
-                         <option value="In Progress" className="bg-slate-900">In Progress</option>
-                         <option value="Submitted" className="bg-slate-900">Submitted</option>
-                         <option value="Completed" className="bg-slate-900">Completed</option>
-                         <option value="Rejected" className="bg-slate-900">Rejected</option>
+                        <option value="Created" className="bg-slate-900">Created</option>
+                        <option value="Pending" className="bg-slate-900">Pending</option>
+                        <option value="In Progress" className="bg-slate-900">In Progress</option>
+                        <option value="Submitted" className="bg-slate-900">Submitted</option>
+                        <option value="Completed" className="bg-slate-900">Completed</option>
+                        <option value="Rejected" className="bg-slate-900">Rejected</option>
                       </select>
                     </div>
                   </div>
