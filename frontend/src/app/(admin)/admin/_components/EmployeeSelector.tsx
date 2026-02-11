@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Search, ChevronDown, Check, User, Users, X, Loader2 } from "lucide-react";
+import { Search, ChevronDown, Check, User, Users, X, Loader2, Square, CheckSquare } from "lucide-react";
 import axios from "axios";
 
-interface Employee {
+export interface Employee {
   _id: string;
   name: string;
   employeeId: string;
   designation: string;
+  email: string;
 }
 
 interface EmployeeSelectorProps {
@@ -16,6 +17,7 @@ interface EmployeeSelectorProps {
   onChange: (value: any) => void;
   label?: string;
   placeholder?: string;
+  allEmployees?: Employee[];
 }
 
 const DESIGNATIONS = [
@@ -29,37 +31,39 @@ export default function EmployeeSelector({
   value,
   onChange,
   label = "Select Employee",
-  placeholder = "Select employee(s)"
+  placeholder = "Select employee(s)",
+  allEmployees: externalEmployees
 }: EmployeeSelectorProps) {
   const [selectedDesignation, setSelectedDesignation] = useState("");
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employee[]>(externalEmployees || []);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesignationOpen, setIsDesignationOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCache, setSelectedCache] = useState<Employee[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const designationRef = useRef<HTMLDivElement>(null);
 
-  // Fetch employees when designation changes
   useEffect(() => {
-    if (selectedDesignation) {
-      fetchEmployees();
+    if (externalEmployees) {
+      setAllEmployees(externalEmployees);
     } else {
-      setEmployees([]);
+      fetchAllEmployees();
     }
-  }, [selectedDesignation]);
+  }, [externalEmployees]);
 
-  const fetchEmployees = async () => {
+  const fetchAllEmployees = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/employees-by-designation`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/employees`,
         {
-          params: { designation: selectedDesignation },
           headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` }
         }
       );
       if (response.data.success) {
-        setEmployees(response.data.data);
+        setAllEmployees(response.data.data);
       }
     } catch (err) {
       console.error("Failed to fetch employees:", err);
@@ -68,24 +72,22 @@ export default function EmployeeSelector({
     }
   };
 
-  // Update selection cache to keep track of names/IDs even when designation changes
+  // Filter employees by current selected designation for the employee dropdown
   useEffect(() => {
-    if (employees.length > 0) {
-      const currentValArray = Array.isArray(value) ? value : [value];
-      const newItems = employees.filter(emp => 
-        currentValArray.includes(emp._id) && 
-        !selectedCache.find(c => c._id === emp._id)
-      );
-      if (newItems.length > 0) {
-        setSelectedCache(prev => [...prev, ...newItems]);
-      }
+    if (selectedDesignation) {
+      setEmployees(allEmployees.filter(emp => emp.designation === selectedDesignation));
+    } else {
+      setEmployees([]);
     }
-  }, [employees, value]);
+  }, [selectedDesignation, allEmployees]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (designationRef.current && !designationRef.current.contains(event.target as Node)) {
+        setIsDesignationOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -94,7 +96,7 @@ export default function EmployeeSelector({
 
   const handleToggleEmployee = (empId: string) => {
     if (multiSelect) {
-      const currentValues = Array.isArray(value) ? value : [];
+      const currentValues = Array.isArray(value) ? [...value] : [];
       if (currentValues.includes(empId)) {
         onChange(currentValues.filter(id => id !== empId));
       } else {
@@ -106,12 +108,43 @@ export default function EmployeeSelector({
     }
   };
 
+  const handleToggleDesignation = (designation: string) => {
+    if (!multiSelect) {
+      setSelectedDesignation(designation);
+      setIsDesignationOpen(false);
+      return;
+    }
+
+    const currentValues = Array.isArray(value) ? [...value] : [];
+    const employeesInDesignation = allEmployees.filter(emp => emp.designation === designation);
+    const employeeIdsInDesignation = employeesInDesignation.map(emp => emp._id);
+
+    if (employeeIdsInDesignation.length === 0) return;
+
+    const areAllSelected = employeeIdsInDesignation.every(id => currentValues.includes(id));
+
+    if (areAllSelected) {
+      // Deselect all from this designation
+      onChange(currentValues.filter(id => !employeeIdsInDesignation.includes(id)));
+    } else {
+      // Select all from this designation
+      const newValues = Array.from(new Set([...currentValues, ...employeeIdsInDesignation]));
+      onChange(newValues);
+    }
+  };
+
+  const isDesignationSelected = (designation: string) => {
+    const currentValues = Array.isArray(value) ? value : [];
+    const employeesInDesignation = allEmployees.filter(emp => emp.designation === designation);
+    if (employeesInDesignation.length === 0) return false;
+    return employeesInDesignation.every(emp => currentValues.includes(emp._id));
+  };
+
   const handleSelectAll = () => {
     if (!multiSelect) return;
     const allEmpIds = employees.map(emp => emp._id);
     const currentValues = Array.isArray(value) ? value : [];
     
-    // If all are already selected, deselect all. Otherwise, select all.
     if (allEmpIds.every(id => currentValues.includes(id))) {
       onChange(currentValues.filter(id => !allEmpIds.includes(id)));
     } else {
@@ -134,7 +167,7 @@ export default function EmployeeSelector({
       return `${count} employee(s) selected`;
     } else {
       if (!value) return placeholder;
-      const selected = selectedCache.find(e => e._id === value) || employees.find(e => e._id === value);
+      const selected = allEmployees.find(e => e._id === value);
       if (selected) return `${selected.name} - (${selected.employeeId})`;
       return "Employee selected";
     }
@@ -146,30 +179,74 @@ export default function EmployeeSelector({
   );
 
   return (
-    <div className="space-y-4" ref={dropdownRef}>
+    <div className="space-y-4">
       <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Designation Selection */}
-        <div className="relative group">
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none group-hover:text-indigo-400 transition-colors" />
-          <select
-            value={selectedDesignation}
-            onChange={(e) => {
-                setSelectedDesignation(e.target.value);
-                setSearchTerm("");
-            }}
-            className="w-full pl-4 pr-10 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none font-medium"
-          >
-            <option value="" className="bg-slate-900">Select Designation First</option>
-            {DESIGNATIONS.map(d => (
-              <option key={d} value={d} className="bg-slate-900">{d}</option>
-            ))}
-          </select>
+        <div className="relative group" ref={designationRef}>
+            <button
+                type="button"
+                onClick={() => setIsDesignationOpen(!isDesignationOpen)}
+                className={`w-full flex items-center justify-between px-4 py-3 bg-slate-800/50 border ${isDesignationOpen ? 'border-indigo-500/50 ring-2 ring-indigo-500/20' : 'border-slate-700'} rounded-xl text-white transition-all hover:bg-slate-800/80`}
+            >
+                <span className="truncate text-sm font-medium">
+                    {selectedDesignation || "Select Designation"}
+                </span>
+                <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${isDesignationOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isDesignationOpen && (
+                <div className="absolute z-[130] mt-2 w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
+                        {DESIGNATIONS.map(d => {
+                            const selected = isDesignationSelected(d);
+                            const empCount = allEmployees.filter(e => e.designation === d).length;
+                            const isActive = selectedDesignation === d;
+                            
+                            return (
+                                <div
+                                    key={d}
+                                    className={`flex items-center gap-2 px-3 py-2 transition-colors rounded-xl group cursor-pointer ${isActive ? 'bg-indigo-600/10' : 'hover:bg-slate-800'}`}
+                                >
+                                    {multiSelect && (
+                                        <div 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleToggleDesignation(d);
+                                            }}
+                                            className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${selected ? 'bg-indigo-600 border-indigo-600' : 'border-slate-600 group-hover:border-slate-500'}`}
+                                        >
+                                            {selected && <Check className="h-3.5 w-3.5 text-white" />}
+                                        </div>
+                                    )}
+                                    
+                                    <div 
+                                        className="flex-1 flex items-center justify-between"
+                                        onClick={() => {
+                                            setSelectedDesignation(d);
+                                            if (!multiSelect) setIsDesignationOpen(false);
+                                        }}
+                                    >
+                                        <span className={`text-sm font-medium ${isActive ? 'text-indigo-400' : 'text-slate-300'}`}>
+                                            {d}
+                                        </span>
+                                        <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 group-hover:bg-slate-700 transition-colors">
+                                            {empCount}
+                                        </span>
+                                    </div>
+                                    
+                                    {!multiSelect && isActive && <Check className="h-3 w-3 text-indigo-400" />}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Employee Selection Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             disabled={!selectedDesignation}
@@ -235,8 +312,12 @@ export default function EmployeeSelector({
                             </div>
                           )}
                           <div className="text-left">
-                            <p className="text-sm font-bold truncate max-w-[150px]">{emp.name}</p>
-                            <p className={`text-[10px] uppercase font-bold tracking-tighter ${isSelected(emp._id) ? 'text-indigo-400/70' : 'text-slate-500'}`}>{emp.employeeId}</p>
+                            <p className="text-sm font-bold truncate max-w-[180px]">
+                              {emp.name} <span className="text-[11px] font-medium text-slate-500 ml-1">({emp.employeeId})</span>
+                            </p>
+                            <p className={`text-[10px] uppercase font-extrabold tracking-widest mt-0.5 ${isSelected(emp._id) ? 'text-indigo-400/80' : 'text-slate-500'}`}>
+                              {emp.designation}
+                            </p>
                           </div>
                         </div>
                         {!multiSelect && isSelected(emp._id) && <Check className="h-4 w-4 text-indigo-400" />}
@@ -261,7 +342,7 @@ export default function EmployeeSelector({
       {multiSelect && Array.isArray(value) && value.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2 p-3 bg-slate-900/30 rounded-2xl border border-slate-800/50">
           {value.map(id => {
-            const cachedEmp = selectedCache.find(e => e._id === id) || employees.find(e => e._id === id);
+            const cachedEmp = allEmployees.find(e => e._id === id);
             return (
               <span key={id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-bold animate-in zoom-in duration-200">
                 <User className="h-3 w-3" />
@@ -288,3 +369,4 @@ export default function EmployeeSelector({
     </div>
   );
 }
+

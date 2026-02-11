@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, Clock, CheckCircle2, FileText, Send, Paperclip } from "lucide-react";
+import { AlertCircle, Clock, CheckCircle2, FileText, Send, Paperclip, Calendar } from "lucide-react";
 import SubmitTaskModal from "./_components/SubmitTaskModal";
 
 interface Task {
@@ -11,6 +11,7 @@ interface Task {
     status: string;
     taskId: string;
     deadline?: string;
+    startDate?: string;
     createdAt: string;
     attachment?: string;
     submittedAt?: string;
@@ -96,6 +97,34 @@ export default function MyTasksPage() {
                 <p className="text-slate-400 mt-2 text-lg">Manage and submit your daily reports</p>
             </div>
 
+            {/* Stats Quick View */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-indigo-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Total Tasks</p>
+                    <h3 className="text-3xl font-black text-white">{tasks.length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-violet-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Upcoming</p>
+                    <h3 className="text-3xl font-black text-violet-400">{tasks.filter(t => t.startDate && new Date(t.startDate) > new Date()).length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-amber-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">In Progress</p>
+                    <h3 className="text-3xl font-black text-amber-400">{tasks.filter(t => t.status === "In Progress" || t.isInProgress).length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-emerald-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Completed</p>
+                    <h3 className="text-3xl font-black text-emerald-400">{tasks.filter(t => t.status === "Completed").length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-blue-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Submitted</p>
+                    <h3 className="text-3xl font-black text-blue-400">{tasks.filter(t => t.status === "Submitted").length}</h3>
+                </div>
+                <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-3xl backdrop-blur-sm group hover:border-slate-500/30 transition-all">
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1 group-hover:text-slate-300 transition-colors">Pending</p>
+                    <h3 className="text-3xl font-black text-slate-400">{tasks.filter(t => t.status === "Pending" || t.status === "Created" || t.status === "Rejected").length}</h3>
+                </div>
+            </div>
+
             {error && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
                     <AlertCircle size={20} />
@@ -136,6 +165,13 @@ export default function MyTasksPage() {
                                                     </span>
                                                 ) : null;
                                             })()}
+
+                                            {/* Upcoming Badge */}
+                                            {task.startDate && new Date(task.startDate) > new Date() && (
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+                                                    Upcoming
+                                                </span>
+                                            )}
 
                                             {/* Dynamic Status Badge */}
                                             {task.status === "Submitted" ? (
@@ -178,8 +214,13 @@ export default function MyTasksPage() {
 
                                     <div className="flex flex-wrap gap-4 pt-2">
                                         <div className="flex items-center gap-2 text-slate-400 text-sm">
+                                            <Calendar size={16} className="text-indigo-400" />
+                                            <span>Starts: {task.startDate ? new Date(task.startDate).toLocaleDateString() : "Immediate"}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-slate-400 text-sm">
                                             <Clock size={16} />
-                                            <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
+                                            <span>Deadline: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}</span>
                                         </div>
                                        
                                         {task.taskStarted && (
